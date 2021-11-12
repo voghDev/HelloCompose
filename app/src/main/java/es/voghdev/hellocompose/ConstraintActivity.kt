@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
 
 class ConstraintActivity : ComponentActivity() {
@@ -17,7 +18,7 @@ class ConstraintActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       HelloComposeTheme {
-        ConstraintLayoutContent()
+        LargeConstraintLayout()
       }
     }
   }
@@ -66,6 +67,7 @@ class ConstraintActivity : ComponentActivity() {
         "This is a very very very very very very very long text",
         Modifier.constrainAs(text) {
           linkTo(start = guideline, end = parent.end)
+          width = Dimension.preferredWrapContent
         }
       )
     }
