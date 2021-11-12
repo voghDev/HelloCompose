@@ -37,10 +37,10 @@ class ConstraintActivity: ComponentActivity() {
         Text("Button")
       }
 
-      // Assign reference "text" to the Text composable
-      // and constrain it to the bottom of the Button composable
       Text("Text", Modifier.constrainAs(text) {
         top.linkTo(button.bottom, margin = 16.dp)
+        // Centers Text horizontally in the ConstraintLayout
+        centerHorizontallyTo(parent)
       })
     }
   }
