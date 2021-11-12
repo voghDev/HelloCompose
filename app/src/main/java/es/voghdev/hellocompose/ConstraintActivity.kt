@@ -7,6 +7,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
@@ -52,6 +53,29 @@ class ConstraintActivity : ComponentActivity() {
       ) {
         Text("Button 2")
       }
+    }
+  }
+
+  @Composable
+  fun LargeConstraintLayout() {
+    ConstraintLayout {
+      val text = createRef()
+
+      val guideline = createGuidelineFromStart(fraction = 0.5f)
+      Text(
+        "This is a very very very very very very very long text",
+        Modifier.constrainAs(text) {
+          linkTo(start = guideline, end = parent.end)
+        }
+      )
+    }
+  }
+
+  @Preview
+  @Composable
+  fun LargeConstraintLayoutPreview() {
+    HelloComposeTheme {
+      LargeConstraintLayout()
     }
   }
 }
