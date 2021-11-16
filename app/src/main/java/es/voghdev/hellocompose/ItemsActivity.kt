@@ -7,6 +7,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -26,10 +28,10 @@ class ItemsActivity : ComponentActivity() {
         setContent {
             HelloComposeTheme {
                 Column {
-                    SampleRow()
-                    SampleRow()
-                    SampleRow()
-                    SampleRow()
+                    SampleRow("This is row 1")
+                    SampleRow("This is row 2")
+                    SampleRow("This is row 3")
+                    SampleRow("This is row 4")
                 }
             }
         }
@@ -37,22 +39,31 @@ class ItemsActivity : ComponentActivity() {
 
     @Preview
     @Composable
-    private fun SampleRow() {
-        Column(Modifier.clickable(onClick = { })) {
-            SmallSpacer()
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        bottom = 8.dp,
-                        start = 16.dp,
-                        end = 16.dp
-                    ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SampleImage()
+    private fun RowPreview() {
+        SampleRow(text = "This is a row")
+    }
+
+    @Composable
+    private fun SampleRow(text: String) {
+        Box {
+            HighlightedBackground()
+            Column(Modifier.clickable(onClick = { })) {
                 SmallSpacer()
-                RowBody(text = "This is a row")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            bottom = 8.dp,
+                            start = 16.dp,
+                            end = 16.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SampleImage()
+                    SmallSpacer()
+                    RowBody(text = text)
+                }
+                Separator()
             }
         }
     }
@@ -65,7 +76,8 @@ class ItemsActivity : ComponentActivity() {
     private fun SampleImage() = Box(Modifier.size(48.dp)) {
         Image(
             painter = rememberImagePainter(data = "https://lorempixel.com/48/48/people/1/"),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
         )
     }
 
@@ -83,5 +95,31 @@ class ItemsActivity : ComponentActivity() {
             lineHeight = 22.sp,
             overflow = TextOverflow.Ellipsis
         )
+    }
+
+    @Composable
+    private fun Separator() {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 8.dp,
+                    end = 8.dp
+                )
+                .height(1.dp)
+                .background(MaterialTheme.colors.onPrimary)
+        )
+    }
+
+    @Composable
+    private fun HighlightedBackground() {
+        Card(
+            backgroundColor = Color.LightGray,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(start = 12.dp, end = 12.dp)
+        ) {}
     }
 }
