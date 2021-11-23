@@ -122,7 +122,8 @@ class HorizontalScrollingActivity : ComponentActivity() {
             Column(
                 Modifier
                     .width(width)
-                    .height(height)
+                    .height(height),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
                     painter = rememberImagePainter(
@@ -135,20 +136,17 @@ class HorizontalScrollingActivity : ComponentActivity() {
                     modifier = Modifier
                         .size(64.dp)
                         .padding(top = 8.dp)
-                        .align(Alignment.CenterHorizontally)
                 )
                 Text(
                     name,
                     modifier = Modifier
-                        .padding(top = 8.dp)
-                        .align(Alignment.CenterHorizontally),
+                        .padding(top = 8.dp),
                     maxLines = 1,
                     fontSize = 11.sp
                 )
                 Button(
                     modifier = Modifier
-                        .padding(top = 12.dp)
-                        .align(Alignment.CenterHorizontally),
+                        .padding(top = 12.dp),
                     onClick = { /*TODO*/ }) {
                     Text("Follow", fontSize = 11.sp)
                 }
