@@ -28,6 +28,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
+import coil.transform.RoundedCornersTransformation
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
 
 class HorizontalScrollingActivity : ComponentActivity() {
@@ -129,7 +130,7 @@ class HorizontalScrollingActivity : ComponentActivity() {
                     painter = rememberImagePainter(
                         data = pictureUrl,
                         builder = {
-                            transformations(CircleCropTransformation())
+                            transformations(RoundedCornersTransformation(0f))
                         }
                     ),
                     contentDescription = null,
