@@ -1,6 +1,7 @@
 package es.voghdev.hellocompose
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
                 VideoPlayer()
             }
         }
+        startActivity(Intent(this, ItemsActivity::class.java))
     }
 }
 
@@ -54,8 +56,16 @@ class MainActivity : ComponentActivity() {
 fun VideoPlayer(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val videos = listOf(
-        MainActivity.Video("001", "Big buck bunny", "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"),
-        MainActivity.Video("002", "Sintel", "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"),
+        MainActivity.Video(
+            "001",
+            "Big buck bunny",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        ),
+        MainActivity.Video(
+            "002",
+            "Sintel",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+        ),
     )
     val mediaItems = arrayListOf<MediaItem>()
 
@@ -79,7 +89,7 @@ fun VideoPlayer(modifier: Modifier = Modifier) {
         SimpleExoPlayer.Builder(context).build().apply {
             this.setMediaItems(mediaItems)
             this.prepare()
-            this.playWhenReady = true
+            this.playWhenReady = false
         }
     }
 

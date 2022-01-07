@@ -24,6 +24,7 @@
         </activity>
         <activity android:name=".StaggeredGridActivity" />
         <activity android:name=".ConstraintActivity" />
+        <activity android:name=".ItemsActivity" />
     </application>
 
 </manifest>

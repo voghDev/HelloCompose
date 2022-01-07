@@ -7,119 +7,223 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
 
+data class VideoResultEntity(
+    val id: String,
+    val preview: String,
+    val name: String
+)
+
+val videos = listOf(
+    VideoResultEntity(
+        "001",
+        "https://via.placeholder.com/150",
+        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    ),
+    VideoResultEntity(
+        "002",
+        "https://via.placeholder.com/150",
+        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+    ),
+)
+
 class ItemsActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             HelloComposeTheme {
                 Column {
-                    SampleRow("This is row 1")
-                    SampleRow("This is row 2")
-                    SampleRow("This is row 3")
-                    SampleRow("This is row 4")
+                    videos.forEachIndexed { i, it ->
+                        VideoItem(i, it)
+                    }
                 }
             }
         }
     }
+}
 
-    @Preview
-    @Composable
-    private fun RowPreview() {
-        SampleRow(text = "This is a row")
-    }
 
-    @Composable
-    private fun SampleRow(text: String) {
-        Box {
-            HighlightedBackground()
-            Column(Modifier.clickable(onClick = { })) {
-                SmallSpacer()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            bottom = 8.dp,
-                            start = 16.dp,
-                            end = 16.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SampleImage()
-                    SmallSpacer()
-                    RowBody(text = text)
-                }
-                Separator()
-            }
+@Composable
+fun VideoPlayList(
+    modifier: Modifier = Modifier,
+    gameVideos: List<VideoResultEntity>
+) {
+    LazyColumn(modifier = modifier) {
+        itemsIndexed(
+            items = gameVideos,
+            key = { _, item -> item.id }
+        ) { index, item ->
+            VideoItem(index = index, video = item)
         }
     }
+}
 
-    @Composable
-    fun SmallSpacer() =
-        Spacer(modifier = Modifier.size(8.dp))
+@Composable
+fun VideoItem(index: Int, video: VideoResultEntity) {
+    val currentlyPlaying = remember { mutableStateOf(true) }
 
-    @Composable
-    private fun SampleImage() = Box(Modifier.size(48.dp)) {
-        Image(
-            painter = rememberImagePainter(data = "https://lorempixel.com/48/48/people/1/"),
-            contentDescription = null,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-        )
-    }
-
-    @Composable
-    fun RowBody(
-        text: String,
-        modifier: Modifier = Modifier,
-        color: Color = Color.Black
+    ConstraintLayout(
+        modifier =
+        Modifier
+            .testTag("VideoParent")
+            .padding(8.dp)
+            .wrapContentSize()
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.body2,
-            color = color,
-            modifier = modifier,
-            lineHeight = 22.sp,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
+        val (thumbnail, play, title, nowPlaying) =
+            createRefs()
 
-    @Composable
-    private fun Separator() {
-        Box(
+        // thumbnail
+        Image(
+            contentScale = ContentScale.Crop,
+            painter =
+            rememberImagePainter(
+                data = video.preview,
+                builder = {
+                    placeholder(R.drawable.ic_launcher_foreground)
+                    crossfade(true)
+                }
+            ),
+            contentDescription = "Thumbnail",
+            modifier =
             Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 8.dp,
-                    end = 8.dp
-                )
-                .height(1.dp)
-                .background(MaterialTheme.colors.onPrimary)
+                .height(120.dp)
+                .width(120.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .shadow(elevation = 20.dp)
+                .constrainAs(thumbnail) {
+                    top.linkTo(
+                        parent.top,
+                        margin = 8.dp
+                    )
+                    start.linkTo(
+                        parent.start,
+                        margin = 8.dp
+                    )
+                    bottom.linkTo(parent.bottom)
+                }
         )
-    }
 
-    @Composable
-    private fun HighlightedBackground() {
-        Card(
-            backgroundColor = Color.LightGray,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(start = 12.dp, end = 12.dp)
-        ) {}
+        // title
+        Text(
+            text = video.name,
+            modifier =
+            Modifier.constrainAs(title) {
+                top.linkTo(thumbnail.top, margin = 8.dp)
+                start.linkTo(
+                    thumbnail.end,
+                    margin = 8.dp
+                )
+                end.linkTo(parent.end, margin = 8.dp)
+                width = Dimension.preferredWrapContent
+                height = Dimension.wrapContent
+            },
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            softWrap = true,
+        )
+
+        // divider
+        Divider(
+            modifier =
+            Modifier
+                .padding(horizontal = 8.dp)
+                .testTag("Divider"),
+            color = Color(0xFFE0E0E0)
+        )
+
+        // show only if video is currently playing
+        if (currentlyPlaying.value) {
+            // play button image
+            Image(
+                contentScale = ContentScale.Crop,
+                colorFilter =
+                if (video.preview.isEmpty())
+                    ColorFilter.tint(Color.White)
+                else
+                    ColorFilter.tint(Color(0xFFF50057)),
+                painter =
+                painterResource(
+                    id = android.R.drawable.ic_media_play
+                ),
+                contentDescription = "Playing",
+                modifier =
+                Modifier
+                    .height(50.dp)
+                    .width(50.dp)
+                    .graphicsLayer {
+                        clip = true
+                        shadowElevation = 20.dp.toPx()
+                    }
+                    .constrainAs(play) {
+                        top.linkTo(thumbnail.top)
+                        start.linkTo(thumbnail.start)
+                        end.linkTo(thumbnail.end)
+                        bottom.linkTo(thumbnail.bottom)
+                    }
+            )
+
+            // Now playing text
+            Text(
+                text = "Now Playing",
+                color = Color(0xFFF50057),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                modifier =
+                Modifier.constrainAs(nowPlaying) {
+                    top.linkTo(
+                        title.bottom,
+                        margin = 8.dp
+                    )
+                    start.linkTo(
+                        thumbnail.end,
+                        margin = 8.dp
+                    )
+                    bottom.linkTo(
+                        thumbnail.bottom,
+                        margin = 8.dp
+                    )
+                    end.linkTo(
+                        parent.end,
+                        margin = 8.dp
+                    )
+                    width =
+                        Dimension.preferredWrapContent
+                    height =
+                        Dimension.preferredWrapContent
+                }
+            )
+        }
     }
 }
