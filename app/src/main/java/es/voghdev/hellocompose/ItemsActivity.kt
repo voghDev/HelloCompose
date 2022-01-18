@@ -55,6 +55,61 @@ val videos = listOf(
         "https://via.placeholder.com/150",
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
     ),
+    VideoResultEntity(
+        "003",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    ),
+    VideoResultEntity(
+        "004",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    ),
+    VideoResultEntity(
+        "005",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    ),
+    VideoResultEntity(
+        "006",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    ),
+    VideoResultEntity(
+        "007",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    ),
+    VideoResultEntity(
+        "008",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    ),
+    VideoResultEntity(
+        "010",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+    ),
+    VideoResultEntity(
+        "011",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    ),
+    VideoResultEntity(
+        "012",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
+    ),
+    VideoResultEntity(
+        "013",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    ),
+    VideoResultEntity(
+        "014",
+        "https://via.placeholder.com/150",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
+    )
 )
 
 class ItemsActivity : ComponentActivity() {
@@ -63,16 +118,13 @@ class ItemsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HelloComposeTheme {
-                Column {
-                    videos.forEachIndexed { i, it ->
-                        VideoItem(i, it)
-                    }
+                Box {
+                    VideoPlayList(gameVideos = videos)
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun VideoPlayList(

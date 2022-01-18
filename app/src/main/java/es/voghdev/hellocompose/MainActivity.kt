@@ -60,12 +60,7 @@ fun VideoPlayer(modifier: Modifier = Modifier) {
             "001",
             "Big buck bunny",
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        ),
-        MainActivity.Video(
-            "002",
-            "Sintel",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-        ),
+        )
     )
     val mediaItems = arrayListOf<MediaItem>()
 
