@@ -7,8 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
@@ -131,7 +130,9 @@ fun VideoPlayList(
     modifier: Modifier = Modifier,
     gameVideos: List<VideoResultEntity>
 ) {
-    LazyColumn(modifier = modifier) {
+    val state = rememberLazyListState()
+
+    LazyColumn(modifier = modifier, state = state) {
         itemsIndexed(
             items = gameVideos,
             key = { _, item -> item.id }
@@ -148,7 +149,7 @@ fun VideoItem(index: Int, video: VideoResultEntity) {
     ConstraintLayout(
         modifier =
         Modifier
-            .testTag("VideoParent")
+            .testTag("VideoParent $index")
             .padding(8.dp)
             .wrapContentSize()
     ) {
@@ -278,4 +279,16 @@ fun VideoItem(index: Int, video: VideoResultEntity) {
             )
         }
     }
+}
+
+fun LazyListState.visibleItems(threshold: Float) =
+    layoutInfo
+        .visibleItemsInfo
+        .filter { visibilityPercent(it) >= threshold }
+
+fun LazyListState.visibilityPercent(info: LazyListItemInfo): Float {
+    val cutTop = maxOf(0, layoutInfo.viewportStartOffset - info.offset)
+    val cutBottom = maxOf(0, info.offset + info.size - layoutInfo.viewportEndOffset)
+
+    return maxOf(0f, 100f - (cutTop + cutBottom) * 100f / info.size)
 }
