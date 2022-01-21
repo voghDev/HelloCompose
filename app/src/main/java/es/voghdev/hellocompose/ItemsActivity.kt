@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import coil.ImageLoader
+import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
+import coil.decode.SvgDecoder
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
 
 data class VideoResultEntity(
@@ -43,12 +48,12 @@ val videos = listOf(
     ),
     VideoResultEntity(
         "002",
-        "https://via.placeholder.com/150",
+        "https://static.klisst.com/educational_videos/create_a_list_icon.svg",
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
     ),
     VideoResultEntity(
         "003",
-        "https://via.placeholder.com/150",
+        "https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/android.svg",
         "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     ),
     VideoResultEntity(
@@ -83,7 +88,7 @@ val videos = listOf(
     ),
     VideoResultEntity(
         "011",
-        "https://via.placeholder.com/150",
+        "https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/cartman.svg",
         "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     ),
     VideoResultEntity(
@@ -148,36 +153,64 @@ fun VideoItem(index: Int, video: VideoResultEntity) {
         val (thumbnail, play, title, nowPlaying) =
             createRefs()
 
-        // thumbnail
-        Image(
-            contentScale = ContentScale.Crop,
-            painter =
-            rememberImagePainter(
-                data = video.preview,
-                builder = {
-                    placeholder(R.drawable.ic_launcher_foreground)
-                    crossfade(true)
+        if (video.preview.endsWith("svg")) {
+            val imageLoader = ImageLoader.Builder(LocalContext.current)
+                .componentRegistry {
+                    add(SvgDecoder(LocalContext.current))
                 }
-            ),
-            contentDescription = "Thumbnail",
-            modifier =
-            Modifier
-                .height(120.dp)
-                .width(120.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .shadow(elevation = 20.dp)
-                .constrainAs(thumbnail) {
-                    top.linkTo(
-                        parent.top,
-                        margin = 8.dp
-                    )
-                    start.linkTo(
-                        parent.start,
-                        margin = 8.dp
-                    )
-                    bottom.linkTo(parent.bottom)
-                }
-        )
+                .build()
+            CompositionLocalProvider(LocalImageLoader provides imageLoader) {
+                Image(
+                    contentScale = ContentScale.Crop,
+                    painter = rememberImagePainter(video.preview),
+                    contentDescription = "SVG image",
+                    modifier = Modifier
+                        .height(120.dp)
+                        .width(120.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .shadow(elevation = 20.dp)
+                        .constrainAs(thumbnail) {
+                            top.linkTo(
+                                parent.top
+                            )
+                            start.linkTo(
+                                parent.start
+                            )
+                            bottom.linkTo(parent.bottom)
+                        }
+                )
+            }
+        } else {
+            Image(
+                contentScale = ContentScale.Crop,
+                painter =
+                rememberImagePainter(
+                    data = video.preview,
+                    builder = {
+                        placeholder(R.drawable.ic_launcher_foreground)
+                        crossfade(true)
+                    }
+                ),
+                contentDescription = "Thumbnail",
+                modifier =
+                Modifier
+                    .height(120.dp)
+                    .width(120.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .shadow(elevation = 20.dp)
+                    .constrainAs(thumbnail) {
+                        top.linkTo(
+                            parent.top,
+                            margin = 8.dp
+                        )
+                        start.linkTo(
+                            parent.start,
+                            margin = 8.dp
+                        )
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+        }
 
         // title
         Text(
