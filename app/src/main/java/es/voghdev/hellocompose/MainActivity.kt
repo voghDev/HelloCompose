@@ -113,6 +113,7 @@ fun VideoPlayer(modifier: Modifier = Modifier) {
                 modifier =
                 Modifier
                     .testTag("VideoPlayer")
+                    .background(Color.Black)
                     .constrainAs(videoPlayer) {
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)
