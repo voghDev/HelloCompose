@@ -27,12 +27,7 @@ class ItemsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HelloComposeTheme {
-                Column {
-                    SampleRow("This is row 1")
-                    SampleRow("This is row 2")
-                    SampleRow("This is row 3")
-                    SampleRow("This is row 4")
-                }
+                ItemsScreen()
             }
         }
     }
@@ -41,85 +36,5 @@ class ItemsActivity : ComponentActivity() {
     @Composable
     private fun RowPreview() {
         SampleRow(text = "This is a row")
-    }
-
-    @Composable
-    private fun SampleRow(text: String) {
-        Box {
-            HighlightedBackground()
-            Column(Modifier.clickable(onClick = { })) {
-                SmallSpacer()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            bottom = 8.dp,
-                            start = 16.dp,
-                            end = 16.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SampleImage()
-                    SmallSpacer()
-                    RowBody(text = text)
-                }
-                Separator()
-            }
-        }
-    }
-
-    @Composable
-    fun SmallSpacer() =
-        Spacer(modifier = Modifier.size(8.dp))
-
-    @Composable
-    private fun SampleImage() = Box(Modifier.size(48.dp)) {
-        Image(
-            painter = rememberImagePainter(data = "https://lorempixel.com/48/48/people/1/"),
-            contentDescription = null,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-        )
-    }
-
-    @Composable
-    fun RowBody(
-        text: String,
-        modifier: Modifier = Modifier,
-        color: Color = Color.Black
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.body2,
-            color = color,
-            modifier = modifier,
-            lineHeight = 22.sp,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-
-    @Composable
-    private fun Separator() {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 8.dp,
-                    end = 8.dp
-                )
-                .height(1.dp)
-                .background(MaterialTheme.colors.onPrimary)
-        )
-    }
-
-    @Composable
-    private fun HighlightedBackground() {
-        Card(
-            backgroundColor = Color.LightGray,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(start = 12.dp, end = 12.dp)
-        ) {}
     }
 }
