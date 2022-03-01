@@ -32,8 +32,11 @@ fun HelloComposeApp() {
             onOpenGridClick = {
                 navController.navigate("chips")
             },
-            onOpenDraggableClick = {
+            onOpenItemsClick = {
                 navController.navigate("items")
+            },
+            onOpenDraggableClick = {
+                navController.navigate("draggable")
             }
         )
     }
@@ -42,12 +45,16 @@ fun HelloComposeApp() {
 @Composable
 fun MainScreen(
     onOpenGridClick: () -> Unit,
+    onOpenItemsClick: () -> Unit,
     onOpenDraggableClick: () -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
         Column {
             Button(onClick = onOpenGridClick) {
                 Text("Item chips example")
+            }
+            Button(onClick = onOpenItemsClick) {
+                Text("A list with some items example")
             }
             Button(onClick = onOpenDraggableClick) {
                 Text("Draggable example")

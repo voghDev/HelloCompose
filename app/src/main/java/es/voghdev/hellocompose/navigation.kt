@@ -4,6 +4,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import es.voghdev.hellocompose.ChipsScreen
+import es.voghdev.hellocompose.DraggableScreen
 import es.voghdev.hellocompose.ItemsScreen
 import es.voghdev.hellocompose.MainScreen
 
@@ -11,11 +12,15 @@ import es.voghdev.hellocompose.MainScreen
 fun HelloAppNavigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {
         composable(NavItem.Main.route) {
-            MainScreen(onOpenGridClick = {
-                navController.navigate(NavItem.Chips.route)
-            },
-                onOpenDraggableClick = {
+            MainScreen(
+                onOpenGridClick = {
+                    navController.navigate(NavItem.Chips.route)
+                },
+                onOpenItemsClick = {
                     navController.navigate(NavItem.ItemsList.route)
+                },
+                onOpenDraggableClick = {
+                    navController.navigate(NavItem.Draggable.route)
                 }
             )
         }
@@ -24,6 +29,9 @@ fun HelloAppNavigation(navController: NavHostController) {
         }
         composable(NavItem.ItemsList.route) {
             ItemsScreen()
+        }
+        composable(NavItem.Draggable.route) {
+            DraggableScreen()
         }
     }
 }
@@ -44,6 +52,7 @@ sealed class NavItem(
     object Main : NavItem("main")
     object Chips : NavItem("chips")
     object ItemsList : NavItem("items")
+    object Draggable : NavItem("draggable")
 }
 
 enum class Args(val key: String, val navType: NavType<*>) {
