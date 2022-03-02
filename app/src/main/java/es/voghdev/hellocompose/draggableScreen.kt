@@ -1,6 +1,7 @@
 package es.voghdev.hellocompose
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -19,6 +20,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -49,7 +51,15 @@ fun DraggableScreen() {
                         .fillMaxWidth()
                         .height(200.dp)
                         .background(headerColors[currentPage])
-                )
+                ) {
+                    Image(
+                        painter = rememberImagePainter("https://picsum.photos/400/200"),
+                        contentDescription = "Header image",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                    )
+                }
                 Box(
                     Modifier
                         .fillMaxWidth()
