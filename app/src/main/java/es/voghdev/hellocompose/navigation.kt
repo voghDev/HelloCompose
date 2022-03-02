@@ -3,10 +3,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import es.voghdev.hellocompose.ChipsScreen
-import es.voghdev.hellocompose.DraggableScreen
-import es.voghdev.hellocompose.ItemsScreen
-import es.voghdev.hellocompose.MainScreen
+import es.voghdev.hellocompose.*
 
 @Composable
 fun HelloAppNavigation(navController: NavHostController) {
@@ -21,6 +18,9 @@ fun HelloAppNavigation(navController: NavHostController) {
                 },
                 onOpenDraggableClick = {
                     navController.navigate(NavItem.Draggable.route)
+                },
+                onOpenPagerClick = {
+                    navController.navigate(NavItem.AccompanistPager.route)
                 }
             )
         }
@@ -32,6 +32,9 @@ fun HelloAppNavigation(navController: NavHostController) {
         }
         composable(NavItem.Draggable.route) {
             DraggableScreen()
+        }
+        composable(NavItem.AccompanistPager.route) {
+            AccompanistPagerScreen()
         }
     }
 }
@@ -53,6 +56,7 @@ sealed class NavItem(
     object Chips : NavItem("chips")
     object ItemsList : NavItem("items")
     object Draggable : NavItem("draggable")
+    object AccompanistPager : NavItem("accompanist")
 }
 
 enum class Args(val key: String, val navType: NavType<*>) {

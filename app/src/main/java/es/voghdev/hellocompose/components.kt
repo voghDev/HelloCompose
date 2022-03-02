@@ -37,6 +37,9 @@ fun HelloComposeApp() {
             },
             onOpenDraggableClick = {
                 navController.navigate("draggable")
+            },
+            onOpenPagerClick = {
+                navController.navigate("accompanist")
             }
         )
     }
@@ -46,7 +49,8 @@ fun HelloComposeApp() {
 fun MainScreen(
     onOpenGridClick: () -> Unit,
     onOpenItemsClick: () -> Unit,
-    onOpenDraggableClick: () -> Unit
+    onOpenDraggableClick: () -> Unit,
+    onOpenPagerClick: () -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
         Column {
@@ -58,6 +62,9 @@ fun MainScreen(
             }
             Button(onClick = onOpenDraggableClick) {
                 Text("Draggable example")
+            }
+            Button(onClick = onOpenPagerClick) {
+                Text("Accompanist pager example")
             }
         }
     }
