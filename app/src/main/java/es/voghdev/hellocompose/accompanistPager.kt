@@ -32,14 +32,14 @@ fun AccompanistPagerScreen() {
     ) {
         HorizontalPager(
             count = headerColors.size,
-            state = pagerState
-        ) {
+            state = pagerState,
+        ) { page ->
             Column {
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .background(headerColors[currentPage])
+                        .background(headerColors[page])
                 ) {
                     Image(
                         painter = rememberImagePainter("https://picsum.photos/400/200"),
@@ -53,16 +53,13 @@ fun AccompanistPagerScreen() {
                     Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .background(bodyColors[currentPage])
+                        .background(bodyColors[page])
                 ) {
-                    key(currentPage) {
-                        Text("This is the page $currentPage")
-                    }
+                    Text("This is the page $page")
                 }
             }
         }
     }
-
     LaunchedEffect(Unit) {
         pagerState.scrollToPage(1)
     }
