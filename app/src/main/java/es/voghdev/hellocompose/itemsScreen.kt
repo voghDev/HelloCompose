@@ -28,7 +28,7 @@ fun ItemsScreen() {
     Column {
         SampleRow("This is row 1", 100)
         SampleRow("This is row 2", 0)
-        SampleRow("This is row 3", 133)
+        SampleRow("This is row 3", 133, likedByMe = true)
         SampleRow("This is row 4", 40)
     }
 }
@@ -41,6 +41,7 @@ fun SampleRow(
     likedByMe: Boolean = false
 ) {
     var updatedCount by remember { mutableStateOf(count) }
+    var isLiked by remember { mutableStateOf(likedByMe) }
     Box {
         HighlightedBackground()
         Column(Modifier.clickable(onClick = { })) {
@@ -60,8 +61,13 @@ fun SampleRow(
                 RowTitle(modifier = Modifier.weight(1f), text = text)
                 LikeCount(updatedCount)
                 MinSpacer()
-                LikeIcon(likedByMe) {
-                    updatedCount++
+                LikeIcon(isLiked) { updatedLike ->
+                    if (updatedLike)
+                        updatedCount++
+                    else
+                        updatedCount--
+
+                    isLiked = updatedLike
                 }
                 SmallSpacer()
             }
@@ -125,10 +131,10 @@ fun LikeCount(updatedCount: Int) {
 
 @Composable
 fun LikeIcon(
-    likedByMe: Boolean,
+    isLiked: Boolean,
     onLikeClicked: (Boolean) -> Unit
 ) {
-    val source = if (likedByMe) {
+    val source = if (isLiked) {
         Icons.Default.ThumbUp
     } else {
         Icons.Outlined.ThumbUp
@@ -137,7 +143,7 @@ fun LikeIcon(
     Icon(
         imageVector = source,
         contentDescription = "Like icon",
-        modifier = Modifier.clickable { onLikeClicked(!likedByMe) }
+        modifier = Modifier.clickable { onLikeClicked(!isLiked) }
     )
 }
 
