@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import es.voghdev.hellocompose.ui.theme.HelloComposeTheme
 
+@ExperimentalAnimationApi
 class ItemsActivity : ComponentActivity() {
-    @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -34,7 +34,6 @@ class ItemsActivity : ComponentActivity() {
         }
     }
 
-    @ExperimentalAnimationApi
     @Preview
     @Composable
     private fun RowPreview() {

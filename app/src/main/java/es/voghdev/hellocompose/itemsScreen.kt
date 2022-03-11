@@ -108,11 +108,10 @@ fun RowTitle(
 fun LikeCount(updatedCount: Int) {
     AnimatedContent(
         targetState = updatedCount,
-//        transitionSpec = {
-//            slideInVertically { height -> height }
-//            with
-//                slideOutVertically { height -> -height }
-//        }
+        transitionSpec = {
+            slideInVertically { height -> height } with
+                slideOutVertically { height -> -height }
+        }
     ) {
         Text(
             text = "$it",
