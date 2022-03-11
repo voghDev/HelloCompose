@@ -1,3 +1,4 @@
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -5,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import es.voghdev.hellocompose.*
 
+@ExperimentalAnimationApi
 @Composable
 fun HelloAppNavigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {

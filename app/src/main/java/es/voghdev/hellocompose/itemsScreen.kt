@@ -1,5 +1,6 @@
 package es.voghdev.hellocompose
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,8 +13,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 
+@ExperimentalAnimationApi
 @Composable
 fun ItemsScreen() {
     Column {
@@ -32,12 +33,14 @@ fun ItemsScreen() {
     }
 }
 
+@ExperimentalAnimationApi
 @Composable
 fun SampleRow(
     text: String,
     count: Int = 0,
     likedByMe: Boolean = false
 ) {
+    var updatedCount by remember { mutableStateOf(count) }
     Box {
         HighlightedBackground()
         Column(Modifier.clickable(onClick = { })) {
@@ -55,10 +58,10 @@ fun SampleRow(
                 SampleImage()
                 SmallSpacer()
                 RowTitle(modifier = Modifier.weight(1f), text = text)
-                LikeCount(count)
+                LikeCount(updatedCount)
                 MinSpacer()
                 LikeIcon(likedByMe) {
-
+                    updatedCount++
                 }
                 SmallSpacer()
             }
@@ -100,15 +103,25 @@ fun RowTitle(
     )
 }
 
+@ExperimentalAnimationApi
 @Composable
-fun LikeCount(count: Int) {
-    Text(
-        text = "$count",
-        style = MaterialTheme.typography.body2,
-        color = Color.Black,
-        lineHeight = 22.sp,
-        overflow = TextOverflow.Ellipsis
-    )
+fun LikeCount(updatedCount: Int) {
+    AnimatedContent(
+        targetState = updatedCount,
+//        transitionSpec = {
+//            slideInVertically { height -> height }
+//            with
+//                slideOutVertically { height -> -height }
+//        }
+    ) {
+        Text(
+            text = "$it",
+            style = MaterialTheme.typography.body2,
+            color = Color.Black,
+            lineHeight = 22.sp,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
 
 @Composable

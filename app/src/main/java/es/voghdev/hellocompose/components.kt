@@ -1,6 +1,7 @@
 package es.voghdev.hellocompose
 
 import HelloAppNavigation
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ private val topics = listOf(
     "Religion", "Social sciences", "Technology", "TV", "Writing"
 )
 
+@ExperimentalAnimationApi
 @Composable
 fun HelloComposeApp() {
     val navController = rememberNavController()
