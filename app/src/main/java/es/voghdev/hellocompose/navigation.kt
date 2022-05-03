@@ -23,6 +23,9 @@ fun HelloAppNavigation(navController: NavHostController) {
                 },
                 onOpenPagerClick = {
                     navController.navigate(NavItem.AccompanistPager.route)
+                },
+                onOpenSVGButtonsClick = {
+                    navController.navigate(NavItem.Svg.route)
                 }
             )
         }
@@ -37,6 +40,9 @@ fun HelloAppNavigation(navController: NavHostController) {
         }
         composable(NavItem.AccompanistPager.route) {
             AccompanistPagerScreen()
+        }
+        composable(NavItem.Svg.route) {
+            SvgScreen()
         }
     }
 }
@@ -59,6 +65,7 @@ sealed class NavItem(
     object ItemsList : NavItem("items")
     object Draggable : NavItem("draggable")
     object AccompanistPager : NavItem("accompanist")
+    object Svg : NavItem("svg")
 }
 
 enum class Args(val key: String, val navType: NavType<*>) {

@@ -42,6 +42,9 @@ fun HelloComposeApp() {
             },
             onOpenPagerClick = {
                 navController.navigate("accompanist")
+            },
+            onOpenSVGButtonsClick = {
+                navController.navigate("svg")
             }
         )
     }
@@ -52,7 +55,8 @@ fun MainScreen(
     onOpenGridClick: () -> Unit,
     onOpenItemsClick: () -> Unit,
     onOpenDraggableClick: () -> Unit,
-    onOpenPagerClick: () -> Unit
+    onOpenPagerClick: () -> Unit,
+    onOpenSVGButtonsClick: () -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
         Column {
@@ -67,6 +71,9 @@ fun MainScreen(
             }
             Button(onClick = onOpenPagerClick) {
                 Text("Accompanist pager example")
+            }
+            Button(onClick = onOpenSVGButtonsClick) {
+                Text("SVG Buttons")
             }
         }
     }
