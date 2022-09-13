@@ -45,6 +45,9 @@ fun HelloComposeApp() {
             },
             onOpenSVGButtonsClick = {
                 navController.navigate("svg")
+            },
+            onOpenFormsClick = {
+                navController.navigate("forms")
             }
         )
     }
@@ -56,7 +59,8 @@ fun MainScreen(
     onOpenItemsClick: () -> Unit,
     onOpenDraggableClick: () -> Unit,
     onOpenPagerClick: () -> Unit,
-    onOpenSVGButtonsClick: () -> Unit
+    onOpenSVGButtonsClick: () -> Unit,
+    onOpenFormsClick: () -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
         Column {
@@ -74,6 +78,9 @@ fun MainScreen(
             }
             Button(onClick = onOpenSVGButtonsClick) {
                 Text("SVG Buttons")
+            }
+            Button(onClick = onOpenFormsClick) {
+                Text("Form samples")
             }
         }
     }
