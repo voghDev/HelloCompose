@@ -6,9 +6,7 @@ import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -25,8 +23,9 @@ import es.voghdev.hellocompose.ui.theme.Shapes
 private const val expandedHeight = 280
 private const val collapsedHeight = 30
 
-private val scrollingUpRange = (5f..20f)
-private val scrollingDownRange = (-20f..-5f)
+enum class CentralShapeState {
+    Dragging, Hidden, Collapsed, Expanded
+}
 
 @Composable
 fun SvgScreen() {
@@ -45,19 +44,20 @@ fun SvgScreen() {
                 .height(shapeHeight)
                 .fillMaxWidth()
                 .animateContentSize()
-                .scrollable(
+                .draggable(
                     orientation = Orientation.Vertical,
-                    state = rememberScrollableState { delta ->
-                        when (delta) {
-                            in scrollingUpRange -> {
-                                centralShapeHeight = collapsedHeight
-                            }
-                            in scrollingDownRange -> {
-                                centralShapeHeight = expandedHeight
-                            }
-                            else -> Unit
+                    onDragStarted = {
+
+                    },
+                    onDragStopped = {
+
+                    },
+                    state = rememberDraggableState { delta ->
+                        centralShapeHeight = when {
+                            delta > 0 -> collapsedHeight
+                            delta < 0 -> expandedHeight
+                            else -> centralShapeHeight
                         }
-                        delta
                     }
                 )
                 .align(Alignment.BottomCenter)
