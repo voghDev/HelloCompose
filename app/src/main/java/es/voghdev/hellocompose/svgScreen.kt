@@ -20,16 +20,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import es.voghdev.hellocompose.ui.theme.Shapes
 
-private const val expandedHeight = 280
-private const val collapsedHeight = 78
-
-enum class CentralShapeStatus {
-    Dragging, Hidden, Collapsed, Expanded
+enum class CentralShapeStatus(val height: Int) {
+    Dragging(-1), Hidden(0), Collapsed(78), Expanded(280)
 }
 
 @Composable
 fun SvgScreen() {
-    var centralShapeHeight = remember { mutableStateOf(expandedHeight) }
+    var centralShapeHeight = remember { mutableStateOf(CentralShapeStatus.Expanded.height) }
     var centralShapeStatus by remember { mutableStateOf(CentralShapeStatus.Expanded) }
     val transition = updateTransition(targetState = centralShapeHeight, label = "updateTransition")
 
@@ -48,8 +45,8 @@ fun SvgScreen() {
                     animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessHigh),
                     finishedListener = { _, _ ->
                         centralShapeStatus = when (centralShapeHeight.value) {
-                            collapsedHeight -> CentralShapeStatus.Collapsed
-                            expandedHeight -> CentralShapeStatus.Expanded
+                            CentralShapeStatus.Collapsed.height -> CentralShapeStatus.Collapsed
+                            CentralShapeStatus.Expanded.height -> CentralShapeStatus.Expanded
                             else -> CentralShapeStatus.Hidden
                         }
                     })
@@ -60,8 +57,8 @@ fun SvgScreen() {
                     },
                     state = rememberDraggableState { delta ->
                         centralShapeHeight.value = when {
-                            delta > 0 -> collapsedHeight
-                            delta < 0 -> expandedHeight
+                            delta > 0 -> CentralShapeStatus.Collapsed.height
+                            delta < 0 -> CentralShapeStatus.Expanded.height
                             else -> centralShapeHeight.value
                         }
                     }
@@ -92,7 +89,7 @@ fun SvgScreen() {
                     .background(colorResource(id = R.color.grey), buttonShape)
                     .clip(buttonShape),
                 onClick = {
-                    centralShapeHeight.value = expandedHeight
+                    centralShapeHeight.value = CentralShapeStatus.Expanded.height
                     Log.d("", "Click on the left button")
                 }
             ) {
@@ -122,7 +119,7 @@ fun SvgScreen() {
                     .background(colorResource(id = R.color.grey), buttonShape)
                     .clip(buttonShape),
                 onClick = {
-                    centralShapeHeight.value = collapsedHeight
+                    centralShapeHeight.value = CentralShapeStatus.Collapsed.height
                     Log.d("", "Click on the right button")
                 }
             ) {
@@ -145,7 +142,7 @@ private fun BoxScope.HideCentralShapeButton(centralShapeHeight: MutableState<Int
             .align(Alignment.TopCenter)
             .background(colorResource(id = R.color.teal_700)),
         onClick = {
-            centralShapeHeight.value = 0
+            centralShapeHeight.value = CentralShapeStatus.Hidden.height
         }
     ) {
         Icon(
