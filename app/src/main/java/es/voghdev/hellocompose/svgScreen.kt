@@ -2,14 +2,14 @@ package es.voghdev.hellocompose
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,18 +21,19 @@ import androidx.compose.ui.unit.dp
 import es.voghdev.hellocompose.ui.theme.Shapes
 
 private const val expandedHeight = 280
-private const val collapsedHeight = 30
+private const val collapsedHeight = 78
 
-enum class CentralShapeState {
+enum class CentralShapeStatus {
     Dragging, Hidden, Collapsed, Expanded
 }
 
 @Composable
 fun SvgScreen() {
-    var centralShapeHeight by remember { mutableStateOf(expandedHeight) }
+    var centralShapeHeight = remember { mutableStateOf(expandedHeight) }
+    var centralShapeStatus by remember { mutableStateOf(CentralShapeStatus.Expanded) }
     val transition = updateTransition(targetState = centralShapeHeight, label = "updateTransition")
 
-    val shapeHeight by transition.animateDp(label = "transitionDp") { it.dp }
+    val shapeHeight by transition.animateDp(label = "transitionDp") { it.value.dp }
 
     Box(
         Modifier
@@ -43,20 +44,25 @@ fun SvgScreen() {
             Modifier
                 .height(shapeHeight)
                 .fillMaxWidth()
-                .animateContentSize()
+                .animateContentSize(
+                    animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessHigh),
+                    finishedListener = { _, _ ->
+                        centralShapeStatus = when (centralShapeHeight.value) {
+                            collapsedHeight -> CentralShapeStatus.Collapsed
+                            expandedHeight -> CentralShapeStatus.Expanded
+                            else -> CentralShapeStatus.Hidden
+                        }
+                    })
                 .draggable(
                     orientation = Orientation.Vertical,
                     onDragStarted = {
-
-                    },
-                    onDragStopped = {
-
+                        centralShapeStatus = CentralShapeStatus.Dragging
                     },
                     state = rememberDraggableState { delta ->
-                        centralShapeHeight = when {
+                        centralShapeHeight.value = when {
                             delta > 0 -> collapsedHeight
                             delta < 0 -> expandedHeight
-                            else -> centralShapeHeight
+                            else -> centralShapeHeight.value
                         }
                     }
                 )
@@ -66,7 +72,10 @@ fun SvgScreen() {
                         id = R.color.purple_200
                     )
                 )
-        )
+        ) {
+            HideCentralShapeButton(centralShapeHeight)
+            StatusLabel(centralShapeStatus)
+        }
 
         Box(
             Modifier
@@ -83,7 +92,7 @@ fun SvgScreen() {
                     .background(colorResource(id = R.color.grey), buttonShape)
                     .clip(buttonShape),
                 onClick = {
-                    centralShapeHeight = expandedHeight
+                    centralShapeHeight.value = expandedHeight
                     Log.d("", "Click on the left button")
                 }
             ) {
@@ -113,7 +122,7 @@ fun SvgScreen() {
                     .background(colorResource(id = R.color.grey), buttonShape)
                     .clip(buttonShape),
                 onClick = {
-                    centralShapeHeight = collapsedHeight
+                    centralShapeHeight.value = collapsedHeight
                     Log.d("", "Click on the right button")
                 }
             ) {
@@ -125,4 +134,33 @@ fun SvgScreen() {
             }
         }
     }
+}
+
+@Composable
+private fun BoxScope.HideCentralShapeButton(centralShapeHeight: MutableState<Int>) =
+    IconButton(
+        modifier = Modifier
+            .padding(top = 12.dp, start = 12.dp)
+            .size(32.dp)
+            .align(Alignment.TopCenter)
+            .background(colorResource(id = R.color.teal_700)),
+        onClick = {
+            centralShapeHeight.value = 0
+        }
+    ) {
+        Icon(
+            painter = painterResource(id = android.R.drawable.ic_menu_close_clear_cancel),
+            tint = Color.White,
+            contentDescription = "Close"
+        )
+    }
+
+@Composable
+private fun BoxScope.StatusLabel(status: CentralShapeStatus) {
+    Text(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(top = 36.dp),
+        text = status.toString()
+    )
 }
