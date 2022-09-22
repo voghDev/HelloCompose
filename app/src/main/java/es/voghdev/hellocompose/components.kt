@@ -71,7 +71,7 @@ fun MainScreen(
                 Text("A list with some items example")
             }
             Button(onClick = onOpenDraggableClick) {
-                Text("Draggable example")
+                Text("Draggable items example")
             }
             Button(onClick = onOpenPagerClick) {
                 Text("Accompanist pager example")
