@@ -73,9 +73,9 @@ private fun DraggableItem(
 
     DropTarget<Item>(
         modifier = Modifier
-            .size(24.dp)
-            .align(Alignment.CenterEnd)
-    ) { isInBound, item ->
+            .fillMaxWidth()
+            .height(56.dp)
+    ) { isInBound, _ ->
         val color = if (isInBound) {
             Color.Red
         } else {
@@ -83,7 +83,9 @@ private fun DraggableItem(
         }
         Box(
             Modifier
-                .size(24.dp)
+                .width(100.dp)
+                .height(24.dp)
+                .padding(end = 16.dp)
                 .align(Alignment.CenterEnd)
                 .clip(RoundedCornerShape(16.dp))
                 .background(color)
