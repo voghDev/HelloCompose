@@ -48,7 +48,7 @@ fun HelloAppNavigation(navController: NavHostController) {
             SvgScreen()
         }
         composable(NavItem.Forms.route) {
-            FormsScreen()
+            ReorderableFormScreen()
         }
     }
 }

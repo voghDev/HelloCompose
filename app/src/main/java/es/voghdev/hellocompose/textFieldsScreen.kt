@@ -1,142 +1,245 @@
 package es.voghdev.hellocompose
 
-import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.TextFieldDefaults.indicatorLine
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+
+data class ReorderItem(val id: String)
+
+var someItems = (1..50).map {
+    val title = it.toString()
+    val suffix = ".".repeat(it)
+    ReorderItem(title + suffix)
+}.toMutableList() // This list is mutable because items are swapped (mutated) on it
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun FormsScreen() {
+fun ReorderableFormScreen() {
     Box(
         Modifier
             .fillMaxSize()
     ) {
-        val colors = TextFieldDefaults.outlinedTextFieldColors()
-        val interactionSource = remember { MutableInteractionSource() }
-
-        BasicTextField(
+        DragDropList( // Used in the container instead of the individual cells
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .indicatorLine(
-                    enabled = true,
-                    isError = false,
-                    colors = colors,
-                    interactionSource = interactionSource,
-                    focusedIndicatorLineThickness = 1.dp,
-                    unfocusedIndicatorLineThickness = 1.dp
-                )
-                .padding(bottom = 80.dp),
-            value = TextFieldValue(
-                text = "Custom text field 1",
-                TextRange(1)
-            ),
-            onValueChange = {}
-        ) {
-            TextFieldDefaults.OutlinedTextFieldDecorationBox(
-                value = "",
-                visualTransformation = VisualTransformation.None,
-                innerTextField = it,
-                // same interaction source as the one passed to BasicTextField to read focus state
-                // for text field styling
-                interactionSource = interactionSource,
-                enabled = true,
-                singleLine = true,
-                // update border thickness and shape
-                border = {
-                    UnderlineBox(
-                        enabled = true,
-                        isError = false,
-                        colors = colors,
-                        interactionSource = interactionSource,
-                        shape = CircleShape,
-                        unfocusedBorderThickness = 1.dp,
-                        focusedBorderThickness = 1.dp
-                    )
-                }
-            )
-        }
-
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            value = "Text 2",
-            onValueChange = {},
-            colors = colors
+                .align(Alignment.BottomCenter),
+            items = someItems,
+            onMove = { fromIndex, toIndex ->
+                someItems.swap(fromIndex, toIndex)
+            },
+            onItemClicked = {}
         )
     }
 }
 
-@ExperimentalMaterialApi
 @Composable
-private fun UnderlineBox(
-    enabled: Boolean,
-    isError: Boolean,
-    interactionSource: InteractionSource,
-    colors: TextFieldColors,
-    shape: Shape = TextFieldDefaults.OutlinedTextFieldShape,
-    focusedBorderThickness: Dp = TextFieldDefaults.FocusedBorderThickness,
-    unfocusedBorderThickness: Dp = TextFieldDefaults.UnfocusedBorderThickness
+fun DragDropList(
+    items: MutableList<ReorderItem>,
+    onMove: (Int, Int) -> Unit,
+    onItemClicked: (ReorderItem) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Layout(modifier = Modifier, content = { }) { measurables, constraints ->
-        val rows = 1
-        // Keep track of the width of each row
-        val rowWidths = IntArray(rows) { 0 }
+    val scope = rememberCoroutineScope()
 
-        // Keep track of the max height of each row
-        val rowHeights = IntArray(rows) { 0 }
-        val placeables = measurables.mapIndexed { index, measurable ->
+    var overscrollJob by remember { mutableStateOf<Job?>(null) }
 
-            // Measure each child
-            val placeable = measurable.measure(constraints)
-            placeable
-        }
-        val width = rowWidths.maxOrNull()
-            ?.coerceIn(constraints.minWidth.rangeTo(constraints.maxWidth))
-            ?: constraints.minWidth
+    val dragDropListState = rememberDragDropListState(onMove = onMove)
 
-        // Grid's height is the sum of the tallest element of each row
-        // coerced to the height constraints
-        val height = rowHeights.sumOf { it }
-            .coerceIn(constraints.minHeight.rangeTo(constraints.maxHeight))
+    LazyColumn(
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(
+                    onDrag = { change, offset ->
+                        change.consume()
+                        dragDropListState.onDrag(offset)
 
-        val rowY = IntArray(rows) { 0 }
-        for (i in 1 until rows) {
-            rowY[i] = rowY[i - 1] + rowHeights[i - 1]
-        }
-        layout(width, height) {
-            val rowX = IntArray(rows) { 0 }
-            placeables.forEachIndexed { index, placeable ->
-                val row = index % rows
-                placeable.placeRelative(
-                    x = rowX[row],
-                    y = rowY[row]
+                        if (overscrollJob?.isActive == true)
+                            return@detectDragGesturesAfterLongPress
+
+                        dragDropListState.checkForOverScroll()
+                            .takeIf { it != 0f }
+                            ?.let {
+                                overscrollJob =
+                                    scope.launch { dragDropListState.lazyListState.scrollBy(it) }
+                            }
+                            ?: run { overscrollJob?.cancel() }
+                    },
+                    onDragStart = { offset -> dragDropListState.onDragStart(offset) },
+                    onDragEnd = { dragDropListState.onDragInterrupted() },
+                    onDragCancel = { dragDropListState.onDragInterrupted() }
                 )
-                rowX[row] += placeable.width
+            },
+        state = dragDropListState.lazyListState
+    ) {
+        itemsIndexed(items) { index, item ->
+            Column(
+                modifier = Modifier
+                    .composed {
+                        val offsetOrNull =
+                            dragDropListState.elementDisplacement.takeIf {
+                                index == dragDropListState.currentIndexOfDraggedItem
+                            }
+
+                        Modifier
+                            .graphicsLayer {
+                                translationY = offsetOrNull ?: 0f
+                            }
+                    }
+                    .background(Color.White, shape = RoundedCornerShape(4.dp))
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Item ${item.id}",
+                    modifier = Modifier.clickable { onItemClicked(item) })
             }
         }
     }
+}
+
+@Composable
+fun rememberDragDropListState(
+    lazyListState: LazyListState = rememberLazyListState(),
+    onMove: (Int, Int) -> Unit,
+): DragDropListState {
+    return remember { DragDropListState(lazyListState = lazyListState, onMove = onMove) }
+}
+
+class DragDropListState(
+    val lazyListState: LazyListState,
+    private val onMove: (Int, Int) -> Unit
+) {
+    var draggedDistance by mutableStateOf(0f)
+
+    // used to obtain initial offsets on drag start
+    var initiallyDraggedElement by mutableStateOf<LazyListItemInfo?>(null)
+
+    var currentIndexOfDraggedItem by mutableStateOf<Int?>(null)
+
+    val initialOffsets: Pair<Int, Int>?
+        get() = initiallyDraggedElement?.let { Pair(it.offset, it.offsetEnd) }
+
+    val elementDisplacement: Float?
+        get() = currentIndexOfDraggedItem
+            ?.let { lazyListState.getVisibleItemInfoFor(absoluteIndex = it) }
+            ?.let { item ->
+                (initiallyDraggedElement?.offset ?: 0f).toFloat() + draggedDistance - item.offset
+            }
+
+    private val currentElement: LazyListItemInfo?
+        get() = currentIndexOfDraggedItem?.let {
+            lazyListState.getVisibleItemInfoFor(absoluteIndex = it)
+        }
+
+    var overscrollJob by mutableStateOf<Job?>(null)
+
+    fun onDragStart(offset: Offset) {
+        lazyListState.layoutInfo.visibleItemsInfo
+            .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
+            ?.also {
+                currentIndexOfDraggedItem = it.index
+                initiallyDraggedElement = it
+            }
+    }
+
+    fun onDragInterrupted() {
+        draggedDistance = 0f
+        currentIndexOfDraggedItem = null
+        initiallyDraggedElement = null
+        overscrollJob?.cancel()
+    }
+
+    fun onDrag(offset: Offset) {
+        draggedDistance += offset.y
+
+        initialOffsets?.let { (topOffset, bottomOffset) ->
+            val startOffset = topOffset + draggedDistance
+            val endOffset = bottomOffset + draggedDistance
+
+            currentElement?.let { hovered ->
+                lazyListState.layoutInfo.visibleItemsInfo
+                    .filterNot { item -> item.offsetEnd < startOffset || item.offset > endOffset || hovered.index == item.index }
+                    .firstOrNull { item ->
+                        val delta = startOffset - hovered.offset
+                        when {
+                            delta > 0 -> (endOffset > item.offsetEnd)
+                            else -> (startOffset < item.offset)
+                        }
+                    }
+                    ?.also { item ->
+                        currentIndexOfDraggedItem?.let { current ->
+                            onMove.invoke(
+                                current,
+                                item.index
+                            )
+                        }
+                        currentIndexOfDraggedItem = item.index
+                    }
+            }
+        }
+    }
+
+    /**
+     * Overscroll means when user scrolls out of the screen (or Viewport).
+     * @return 0 if user is scrolling inside the viewport
+     * @return Positive value if user overscrolls outside the bottom of the screen
+     * @return negative value if user overscrolls above the top of the viewport (screen)
+     */
+    fun checkForOverScroll(): Float {
+        return initiallyDraggedElement?.let {
+            val startOffset = it.offset + draggedDistance
+            val endOffset = it.offsetEnd + draggedDistance
+
+            return@let when {
+                draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
+                draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
+                else -> null
+            }
+        } ?: 0f
+    }
+}
+
+/*
+    LazyListItemInfo.index is the item's absolute index in the list
+    Based on the item's "relative position" with the "currently top" visible item,
+    this returns LazyListItemInfo corresponding to it
+*/
+fun LazyListState.getVisibleItemInfoFor(absoluteIndex: Int): LazyListItemInfo? {
+    return this.layoutInfo.visibleItemsInfo.getOrNull(absoluteIndex - this.layoutInfo.visibleItemsInfo.first().index)
+}
+
+/*
+  Bottom offset of the element in Vertical list
+*/
+val LazyListItemInfo.offsetEnd: Int
+    get() = this.offset + this.size
+
+/*
+   Swapping elements in the list
+*/
+fun <T> MutableList<T>.swap(from: Int, to: Int) {
+    if (from == to)
+        return
+
+    val element = this.removeAt(from) ?: return
+    this.add(to, element)
 }
