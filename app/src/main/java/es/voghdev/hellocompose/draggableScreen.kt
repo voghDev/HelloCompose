@@ -26,13 +26,19 @@ fun DraggableScreen() {
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             (1..11).forEach { i ->
-                DraggableItem(
-                    item = Item("Item $i"),
+                val item = Item("Item $i")
+                DragTarget(
+                    modifier = Modifier,
+                    dataToDrop = item,
                     onDrag = { isDragging = true },
                     onDragStarted = { isDragging = true },
-                    onDragEnded = { isDragging = false },
-                    isDragging = isDragging
-                )
+                    onDragEnded = { isDragging = false }
+                ) {
+                    DraggableItem(
+                        item = item,
+                        isDragging = isDragging
+                    )
+                }
             }
         }
 
@@ -43,9 +49,6 @@ fun DraggableScreen() {
 private fun DraggableItem(
     modifier: Modifier = Modifier,
     item: Item,
-    onDrag: (Item) -> Unit,
-    onDragStarted: (Item) -> Unit,
-    onDragEnded: (Item) -> Unit,
     isDragging: Boolean
 ) = Box(modifier) {
     HighlightedBackground()
@@ -72,22 +75,6 @@ private fun DraggableItem(
             }
         }
         Separator()
-    }
-    DragTarget(
-        modifier = Modifier,
-        dataToDrop = item,
-        onDragStarted = onDragStarted,
-        onDragEnded = onDragEnded,
-        onDrag = onDrag
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(16.dp))
-        )
     }
 
     DropTarget<Item>(
