@@ -6,7 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,16 +22,20 @@ data class Item(val title: String)
 
 @Composable
 fun DraggableScreen() {
+    var isDragging by remember { mutableStateOf(false) }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             (1..11).forEach { i ->
-                DraggableItem(item = Item("Item $i"))
+                DraggableItem(
+                    item = Item("Item $i"),
+                    onDrag = { isDragging = true },
+                    onDragStarted = { isDragging = true },
+                    onDragEnded = { isDragging = false },
+                    isDragging = isDragging
+                )
             }
         }
-        DraggableItem(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            item = Item("This is the ghost cell")
-        )
+
     }
 }
 
@@ -39,6 +43,10 @@ fun DraggableScreen() {
 private fun DraggableItem(
     modifier: Modifier = Modifier,
     item: Item,
+    onDrag: (Item) -> Unit,
+    onDragStarted: (Item) -> Unit,
+    onDragEnded: (Item) -> Unit,
+    isDragging: Boolean
 ) = Box(modifier) {
     HighlightedBackground()
     Column(Modifier.clickable(onClick = { })) {
@@ -56,11 +64,22 @@ private fun DraggableItem(
             SampleImage()
             SmallSpacer()
             RowTitle(modifier = Modifier.weight(1f), text = item.title)
-            SmallSpacer()
+            if (isDragging) {
+                MinSpacer()
+                ReorderIcon()
+            } else {
+                SmallSpacer()
+            }
         }
         Separator()
     }
-    DragTarget(modifier = Modifier, dataToDrop = item) {
+    DragTarget(
+        modifier = Modifier,
+        dataToDrop = item,
+        onDragStarted = onDragStarted,
+        onDragEnded = onDragEnded,
+        onDrag = onDrag
+    ) {
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = null,
@@ -83,9 +102,9 @@ private fun DraggableItem(
         }
         Box(
             Modifier
-                .width(100.dp)
+                .width(88.dp)
                 .height(24.dp)
-                .padding(end = 16.dp)
+                .padding(end = 48.dp)
                 .align(Alignment.CenterEnd)
                 .clip(RoundedCornerShape(16.dp))
                 .background(color)
@@ -95,6 +114,9 @@ private fun DraggableItem(
 
 @Composable
 private fun SmallSpacer() = Spacer(modifier = Modifier.size(8.dp))
+
+@Composable
+private fun MinSpacer() = Spacer(modifier = Modifier.size(4.dp))
 
 @Composable
 private fun SampleImage() = Box(Modifier.size(48.dp)) {
@@ -130,6 +152,14 @@ private fun Separator() = Box(
         .height(1.dp)
         .background(MaterialTheme.colors.onPrimary)
 )
+
+@Composable
+private fun ReorderIcon() = Box(Modifier) {
+    Image(
+        painter = painterResource(id = R.drawable.ic_reorder),
+        contentDescription = null
+    )
+}
 
 @Composable
 private fun HighlightedBackground() = Card(

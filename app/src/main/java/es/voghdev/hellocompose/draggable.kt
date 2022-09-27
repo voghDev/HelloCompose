@@ -27,6 +27,9 @@ internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 fun <T> DragTarget(
     modifier: Modifier,
     dataToDrop: T,
+    onDragStarted: (T) -> Unit,
+    onDragEnded: (T) -> Unit,
+    onDrag: (T) -> Unit,
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
@@ -40,17 +43,21 @@ fun <T> DragTarget(
             detectDragGesturesAfterLongPress(onDragStart = {
                 currentState.dataToDrop = dataToDrop
                 currentState.isDragging = true
+                onDragStarted.invoke(dataToDrop)
                 currentState.dragPosition = currentPosition + it
                 currentState.draggableComposable = content
             }, onDrag = { change, dragAmount ->
                 change.consume()
+                onDrag.invoke(dataToDrop)
                 currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
             }, onDragEnd = {
                 currentState.isDragging = false
                 currentState.dragOffset = Offset.Zero
+                onDragEnded.invoke(dataToDrop)
             }, onDragCancel = {
                 currentState.dragOffset = Offset.Zero
                 currentState.isDragging = false
+                onDragEnded.invoke(dataToDrop)
             })
         }) {
         content()
@@ -100,8 +107,8 @@ fun LongPressDraggable(
                 Box(modifier = Modifier
                     .graphicsLayer {
                         val offset = (state.dragPosition + state.dragOffset)
-                        scaleX = 1.3f
-                        scaleY = 1.3f
+                        scaleX = 1.7f
+                        scaleY = 1.7f
                         alpha = if (targetSize == IntSize.Zero) 0f else .9f
                         translationX = offset.x.minus(targetSize.width / 2)
                         translationY = offset.y.minus(targetSize.height / 2)
