@@ -79,11 +79,11 @@ fun SampleRow(
 }
 
 @Composable
-fun SmallSpacer() =
+private fun SmallSpacer() =
     Spacer(modifier = Modifier.size(8.dp))
 
 @Composable
-fun MinSpacer() =
+private fun MinSpacer() =
     Spacer(modifier = Modifier.size(4.dp))
 
 @Composable
@@ -96,7 +96,7 @@ private fun SampleImage() = Box(Modifier.size(48.dp)) {
 }
 
 @Composable
-fun RowTitle(
+private fun RowTitle(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Black
