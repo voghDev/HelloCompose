@@ -102,7 +102,8 @@ fun DragDropList(
 
                         Modifier
                             .graphicsLayer {
-                                translationY = offsetOrNull ?: 0f
+                                translationY =
+                                    offsetOrNull ?: 0f // Here is where we translate dragged item
                             }
                     }
                     .background(Color.White, shape = RoundedCornerShape(4.dp))
@@ -168,7 +169,7 @@ class DragDropListState(
         overscrollJob?.cancel()
     }
 
-    fun onDrag(offset: Offset) {
+    fun onDrag(offset: Offset) { // Here is where dragging handling is managed
         draggedDistance += offset.y
 
         initialOffsets?.let { (topOffset, bottomOffset) ->
@@ -192,7 +193,7 @@ class DragDropListState(
                                 item.index
                             )
                         }
-                        currentIndexOfDraggedItem = item.index
+                        // currentIndexOfDraggedItem = item.index // [BUG] Here is an incorrect update
                     }
             }
         }
