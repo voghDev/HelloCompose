@@ -19,19 +19,42 @@ import coil.compose.rememberImagePainter
 
 data class Item(val title: String)
 
+private val itemsList = (1..10).map { Item("Item $it") }
+private fun alteredItems(updatedItem: Item, newPosition: Int): List<Item> {
+    val index = itemsList.indexOf(updatedItem)
+
+    return if (index > newPosition) {
+        itemsList.subList(0, newPosition)
+            .plus(updatedItem)
+            .plus(itemsList.subList(newPosition + 1, itemsList.size))
+    } else {
+        itemsList.subList(0, index)
+            .plus(itemsList.subList(index + 1, newPosition))
+            .plus(updatedItem)
+            .plus(itemsList.subList(newPosition + 1, itemsList.size))
+    }
+}
+
 @Composable
 fun DraggableScreen() {
     var isDragging by remember { mutableStateOf(false) }
+    var itemsState by remember { mutableStateOf(itemsList) }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
-            (1..11).forEach { i ->
-                val item = Item("Item $i")
+            itemsState.forEachIndexed { i, item ->
                 DragTarget(
                     modifier = Modifier,
                     dataToDrop = item,
+                    index = i,
                     onDrag = { isDragging = true },
-                    onDragStarted = { isDragging = true },
-                    onDragEnded = { isDragging = false }
+                    onDragStarted = {
+                        isDragging = true
+                    },
+                    onDragCanceled = { isDragging = false },
+                    onDragEnded = { item, newPosition ->
+                        isDragging = false
+                        itemsState = alteredItems(item, newPosition)
+                    }
                 ) {
                     DraggableItem(
                         item = item,

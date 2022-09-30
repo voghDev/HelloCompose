@@ -19,6 +19,7 @@ internal class DragTargetInfo {
     var dragOffset by mutableStateOf(Offset.Zero)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
     var dataToDrop by mutableStateOf<Any?>(null)
+    var draggedItemIndex by mutableStateOf(0)
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
@@ -27,38 +28,47 @@ internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 fun <T> DragTarget(
     modifier: Modifier,
     dataToDrop: T,
+    index: Int,
     onDragStarted: (T) -> Unit,
-    onDragEnded: (T) -> Unit,
+    onDragEnded: (T, Int) -> Unit,
+    onDragCanceled: (T) -> Unit,
     onDrag: (T) -> Unit,
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDragTargetInfo.current
+    var itemHeight by remember { mutableStateOf(0) }
 
     Box(modifier = modifier
         .onGloballyPositioned {
             currentPosition = it.localToWindow(Offset.Zero)
+            itemHeight = it.size.height
         }
         .pointerInput(Unit) {
-            detectDragGesturesAfterLongPress(onDragStart = {
-                currentState.dataToDrop = dataToDrop
-                currentState.isDragging = true
-                onDragStarted.invoke(dataToDrop)
-                currentState.dragPosition = currentPosition + it
-                currentState.draggableComposable = content
-            }, onDrag = { change, dragAmount ->
-                change.consume()
-                onDrag.invoke(dataToDrop)
-                currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
-            }, onDragEnd = {
-                currentState.isDragging = false
-                currentState.dragOffset = Offset.Zero
-                onDragEnded.invoke(dataToDrop)
-            }, onDragCancel = {
-                currentState.dragOffset = Offset.Zero
-                currentState.isDragging = false
-                onDragEnded.invoke(dataToDrop)
-            })
+            detectDragGesturesAfterLongPress(
+                onDragStart = {
+                    currentState.dataToDrop = dataToDrop
+                    currentState.isDragging = true
+                    currentState.draggedItemIndex = index
+                    onDragStarted.invoke(dataToDrop)
+                    currentState.dragPosition = currentPosition + it
+                    currentState.draggableComposable = content
+                }, onDrag = { change, dragAmount ->
+                    change.consume()
+                    onDrag.invoke(dataToDrop)
+                    currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
+                    val offsetY =
+                        (currentState.draggedItemIndex * itemHeight) + currentState.dragOffset.y
+                    offsetY.compareTo(1)
+                }, onDragEnd = {
+                    currentState.isDragging = false
+                    currentState.dragOffset = Offset.Zero
+                    onDragEnded.invoke(dataToDrop, 9)
+                }, onDragCancel = {
+                    currentState.dragOffset = Offset.Zero
+                    currentState.isDragging = false
+                    onDragCanceled.invoke(dataToDrop)
+                })
         }) {
         content()
     }
@@ -69,7 +79,6 @@ fun <T> DropTarget(
     modifier: Modifier,
     content: @Composable (BoxScope.(isInBound: Boolean, data: T?) -> Unit)
 ) {
-
     val dragInfo = LocalDragTargetInfo.current
     val dragPosition = dragInfo.dragPosition
     val dragOffset = dragInfo.dragOffset
@@ -110,7 +119,7 @@ fun LongPressDraggable(
                         scaleX = 1f
                         scaleY = 1f
                         alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationY = offset.y.minus(targetSize.height / 2)
+                        translationY = offset.y.minus(targetSize.height)
                     }
                     .onGloballyPositioned {
                         targetSize = it.size
