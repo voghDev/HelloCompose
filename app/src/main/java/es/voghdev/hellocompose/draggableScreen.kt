@@ -20,18 +20,19 @@ import coil.compose.rememberImagePainter
 data class Item(val title: String)
 
 private val itemsList = (1..10).map { Item("Item $it") }
-private fun alteredItems(updatedItem: Item, newPosition: Int): List<Item> {
-    val index = itemsList.indexOf(updatedItem)
+fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
+    val index = this.indexOf(updatedItem)
 
     return if (index > newPosition) {
-        itemsList.subList(0, newPosition)
+        subList(0, newPosition)
             .plus(updatedItem)
-            .plus(itemsList.subList(newPosition + 1, itemsList.size))
+            .plus(subList(newPosition, index))
+            .plus(subList(index + 1, size))
     } else {
-        itemsList.subList(0, index)
-            .plus(itemsList.subList(index + 1, newPosition))
+        subList(0, index)
+            .plus(subList(index + 1, newPosition + 1))
             .plus(updatedItem)
-            .plus(itemsList.subList(newPosition + 1, itemsList.size))
+            .plus(subList(newPosition + 1, size))
     }
 }
 
@@ -53,7 +54,7 @@ fun DraggableScreen() {
                     onDragCanceled = { isDragging = false },
                     onDragEnded = { item, newPosition ->
                         isDragging = false
-                        itemsState = alteredItems(item, newPosition)
+                        itemsState = itemsList.withReallocatedItem(item, newPosition)
                     }
                 ) {
                     DraggableItem(
@@ -102,8 +103,8 @@ private fun DraggableItem(
     DropTarget<Item>(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-    ) { isInBound, _ ->
+            .height(56.dp),
+    ) { isInBound, item ->
         val color = if (isInBound) {
             Color.Red
         } else {

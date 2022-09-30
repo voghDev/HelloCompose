@@ -12,14 +12,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.roundToInt
 
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
+    var draggedItemIndex by mutableStateOf(0)
+    var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
     var dataToDrop by mutableStateOf<Any?>(null)
-    var draggedItemIndex by mutableStateOf(0)
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
@@ -54,16 +56,21 @@ fun <T> DragTarget(
                     currentState.dragPosition = currentPosition + it
                     currentState.draggableComposable = content
                 }, onDrag = { change, dragAmount ->
+                    val position = change.position
+                    val h = itemHeight
                     change.consume()
                     onDrag.invoke(dataToDrop)
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
-                    val offsetY =
-                        (currentState.draggedItemIndex * itemHeight) + currentState.dragOffset.y
-                    offsetY.compareTo(1)
+                    currentState.droppedItemIndex =
+                        currentState.draggedItemIndex.plus(
+                            position.y
+                                .div(h)
+                                .roundToInt()
+                        )
                 }, onDragEnd = {
                     currentState.isDragging = false
                     currentState.dragOffset = Offset.Zero
-                    onDragEnded.invoke(dataToDrop, 9)
+                    onDragEnded.invoke(dataToDrop, maxOf(0, currentState.droppedItemIndex))
                 }, onDragCancel = {
                     currentState.dragOffset = Offset.Zero
                     currentState.isDragging = false

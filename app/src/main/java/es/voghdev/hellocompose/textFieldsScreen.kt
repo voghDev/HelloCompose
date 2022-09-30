@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 data class ReorderItem(val id: String)
 
-var someItems = (1..50).map {
+var someExampleItems = (1..50).map {
     val title = it.toString()
     val suffix = ".".repeat(it)
     ReorderItem(title + suffix)
@@ -43,9 +43,9 @@ fun ReorderableFormScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
-            items = someItems,
+            items = someExampleItems,
             onMove = { fromIndex, toIndex ->
-                someItems.swap(fromIndex, toIndex)
+                someExampleItems.swap(fromIndex, toIndex)
             },
             onItemClicked = {}
         )
