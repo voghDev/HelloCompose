@@ -53,8 +53,9 @@ fun DraggableScreen() {
                     },
                     onDragCanceled = { isDragging = false },
                     onDragEnded = { item, newPosition ->
+                        val currentList = itemsState
                         isDragging = false
-                        itemsState = itemsList.withReallocatedItem(item, newPosition)
+                        itemsState = currentList.withReallocatedItem(item, newPosition)
                     }
                 ) {
                     DraggableItem(

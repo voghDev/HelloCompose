@@ -61,12 +61,19 @@ fun <T> DragTarget(
                     change.consume()
                     onDrag.invoke(dataToDrop)
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
+                    val delta = when {
+                        position.y <= (-1).times(h) -> position.y
+                            .div(h)
+                            .roundToInt()
+                        position.y >= h -> position.y
+                            .div(h)
+                            .roundToInt()
+                        else ->
+                            0
+                    }
+
                     currentState.droppedItemIndex =
-                        currentState.draggedItemIndex.plus(
-                            position.y
-                                .div(h)
-                                .roundToInt()
-                        )
+                        currentState.draggedItemIndex.plus(delta)
                 }, onDragEnd = {
                     currentState.isDragging = false
                     currentState.dragOffset = Offset.Zero
