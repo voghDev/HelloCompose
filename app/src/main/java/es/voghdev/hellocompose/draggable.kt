@@ -1,6 +1,5 @@
 package es.voghdev.hellocompose
 
-import android.util.Log
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -14,7 +13,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import kotlin.math.roundToInt
 
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
@@ -24,7 +22,7 @@ internal class DragTargetInfo {
     var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
     var dataToDrop by mutableStateOf<Any?>(null)
-    var positions by mutableStateOf(mutableMapOf<Int, Rect>())
+    var itemBounds by mutableStateOf(mutableMapOf<Int, Rect>())
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
@@ -42,13 +40,11 @@ fun <T> DragTarget(
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDragTargetInfo.current
-    var itemHeight by remember { mutableStateOf(0) }
 
     Box(modifier = modifier
         .onGloballyPositioned {
             currentPosition = it.localToWindow(Offset.Zero)
-            itemHeight = it.size.height
-            currentState.positions[index] = it.boundsInWindow()
+            currentState.itemBounds[index] = it.boundsInWindow()
         }
         .pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
@@ -60,15 +56,12 @@ fun <T> DragTarget(
                     currentState.dragPosition = currentPosition + it
                     currentState.draggableComposable = content
                 }, onDrag = { change, dragAmount ->
-                    val position = change.position
-                    val h = itemHeight
                     change.consume()
                     onDrag.invoke(dataToDrop)
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
                     val pos = currentState.dragPosition + currentState.dragOffset
-                    currentState.positions.forEach { entry -> // TODO find a more optimal structure!
+                    currentState.itemBounds.forEach { entry -> // TODO find a more optimal structure!
                         if (entry.value.contains(pos) && entry.key != index) {
-                            Log.d("", "Item ${entry.key} contained ($pos)")
                             currentState.droppedItemIndex = entry.key
                         }
                     }
