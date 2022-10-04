@@ -1,5 +1,6 @@
 package es.voghdev.hellocompose
 
+import android.util.Log
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
@@ -22,6 +24,7 @@ internal class DragTargetInfo {
     var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
     var dataToDrop by mutableStateOf<Any?>(null)
+    var positions by mutableStateOf(mutableMapOf<Int, Rect>())
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
@@ -45,6 +48,7 @@ fun <T> DragTarget(
         .onGloballyPositioned {
             currentPosition = it.localToWindow(Offset.Zero)
             itemHeight = it.size.height
+            currentState.positions[index] = it.boundsInWindow()
         }
         .pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
@@ -61,19 +65,13 @@ fun <T> DragTarget(
                     change.consume()
                     onDrag.invoke(dataToDrop)
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
-                    val delta = when {
-                        position.y <= (-1).times(h) -> position.y
-                            .div(h)
-                            .roundToInt()
-                        position.y >= h -> position.y
-                            .div(h)
-                            .roundToInt()
-                        else ->
-                            0
+                    val pos = currentState.dragPosition + currentState.dragOffset
+                    currentState.positions.forEach { entry -> // TODO find a more optimal structure!
+                        if (entry.value.contains(pos) && entry.key != index) {
+                            Log.d("", "Item ${entry.key} contained ($pos)")
+                            currentState.droppedItemIndex = entry.key
+                        }
                     }
-
-                    currentState.droppedItemIndex =
-                        currentState.draggedItemIndex.plus(delta)
                 }, onDragEnd = {
                     currentState.isDragging = false
                     currentState.dragOffset = Offset.Zero
