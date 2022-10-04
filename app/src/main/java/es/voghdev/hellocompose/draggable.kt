@@ -74,6 +74,16 @@ fun <T> DragTarget(
                     currentState.isDragging = false
                     onDragCanceled.invoke(dataToDrop)
                 })
+        }
+        .graphicsLayer {
+            val hoveredIndex = currentState.droppedItemIndex
+            val previousIndex = maxOf(0, hoveredIndex.minus(1))
+            translationY = when {
+                index == currentState.draggedItemIndex -> 0f
+                currentState.isDragging && index == previousIndex -> -15f
+                currentState.isDragging && index == hoveredIndex -> 15f
+                else -> 0f
+            }
         }) {
         content()
     }
