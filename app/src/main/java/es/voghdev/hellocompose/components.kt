@@ -80,7 +80,7 @@ fun MainScreen(
                 Text("SVG Buttons")
             }
             Button(onClick = onOpenFormsClick) {
-                Text("Form samples")
+                Text("Reorderable Form")
             }
         }
     }

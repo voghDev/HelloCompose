@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,19 +19,44 @@ import coil.compose.rememberImagePainter
 
 data class Item(val title: String)
 
+private val itemsList = (1..10).map { Item("Item $it") }
+fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
+    val index = this.indexOf(updatedItem)
+
+    return if (index > newPosition) {
+        subList(0, newPosition)
+            .plus(updatedItem)
+            .plus(subList(newPosition, index))
+            .plus(subList(index + 1, size))
+    } else {
+        subList(0, index)
+            .plus(subList(index + 1, newPosition + 1))
+            .plus(updatedItem)
+            .plus(subList(newPosition + 1, size))
+    }
+}
+
 @Composable
 fun DraggableScreen() {
     var isDragging by remember { mutableStateOf(false) }
+    var itemsState by remember { mutableStateOf(itemsList) }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
-            (1..11).forEach { i ->
-                val item = Item("Item $i")
+            itemsState.forEachIndexed { i, item ->
                 DragTarget(
                     modifier = Modifier,
                     dataToDrop = item,
+                    index = i,
                     onDrag = { isDragging = true },
-                    onDragStarted = { isDragging = true },
-                    onDragEnded = { isDragging = false }
+                    onDragStarted = {
+                        isDragging = true
+                    },
+                    onDragCanceled = { isDragging = false },
+                    onDragEnded = { item, newPosition ->
+                        val currentList = itemsState
+                        isDragging = false
+                        itemsState = currentList.withReallocatedItem(item, newPosition)
+                    }
                 ) {
                     DraggableItem(
                         item = item,
@@ -80,8 +104,8 @@ private fun DraggableItem(
     DropTarget<Item>(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-    ) { isInBound, _ ->
+            .height(56.dp),
+    ) { isInBound, item ->
         val color = if (isInBound) {
             Color.Red
         } else {
