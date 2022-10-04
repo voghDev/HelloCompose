@@ -9,7 +9,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -19,7 +18,7 @@ import coil.compose.rememberImagePainter
 
 data class Item(val title: String)
 
-private val itemsList = (1..10).map { Item("Item $it") }
+private val itemsList = (0..9).map { Item("Item $it") }
 fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
     val index = this.indexOf(updatedItem)
 
@@ -99,27 +98,6 @@ private fun DraggableItem(
             }
         }
         Separator()
-    }
-
-    DropTarget<Item>(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
-    ) { isInBound, item ->
-        val color = if (isInBound) {
-            Color.Red
-        } else {
-            Color.Gray
-        }
-        Box(
-            Modifier
-                .width(88.dp)
-                .height(24.dp)
-                .padding(end = 48.dp)
-                .align(Alignment.CenterEnd)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color)
-        )
     }
 }
 
