@@ -39,32 +39,32 @@ fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
 fun DraggableScreen() {
     var isDragging by remember { mutableStateOf(false) }
     var itemsState by remember { mutableStateOf(itemsList) }
-    LongPressDraggable(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            itemsState.forEachIndexed { i, item ->
-                DragTarget(
-                    modifier = Modifier,
-                    dataToDrop = item,
-                    index = i,
-                    onDrag = { isDragging = true },
-                    onDragStarted = {
-                        isDragging = true
-                    },
-                    onDragCanceled = { isDragging = false },
-                    onDragEnded = { item, newPosition ->
-                        val currentList = itemsState
-                        isDragging = false
-                        itemsState = currentList.withReallocatedItem(item, newPosition)
+    DraggableContainer(modifier = Modifier.fillMaxSize()) {
+        key(itemsState) {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                itemsState.forEachIndexed { i, item ->
+                    Draggable(
+                        modifier = Modifier,
+                        dataToDrop = item,
+                        index = i,
+                        onDrag = { isDragging = true },
+                        onDragStarted = {
+                            isDragging = true
+                        },
+                        onDragCanceled = { isDragging = false },
+                        onDragEnded = { item, newPosition ->
+                            isDragging = false
+                            itemsState = itemsState.withReallocatedItem(item, newPosition)
+                        }
+                    ) {
+                        DraggableItem(
+                            item = item,
+                            isDragging = isDragging
+                        )
                     }
-                ) {
-                    DraggableItem(
-                        item = item,
-                        isDragging = isDragging
-                    )
                 }
             }
         }
-
     }
 }
 
