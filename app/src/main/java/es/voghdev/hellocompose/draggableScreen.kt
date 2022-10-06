@@ -48,13 +48,11 @@ fun DraggableScreen() {
                         dataToDrop = item,
                         index = i,
                         onDrag = { isDragging = true },
-                        onDragStarted = {
-                            isDragging = true
-                        },
+                        onDragStarted = { isDragging = true },
                         onDragCanceled = { isDragging = false },
-                        onDragEnded = { item, newPosition ->
+                        onDragEnded = { droppedItem, newPosition ->
                             isDragging = false
-                            itemsState = itemsState.withReallocatedItem(item, newPosition)
+                            itemsState = itemsState.withReallocatedItem(droppedItem, newPosition)
                         }
                     ) {
                         DraggableItem(

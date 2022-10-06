@@ -1,5 +1,6 @@
 package es.voghdev.hellocompose
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -26,6 +27,7 @@ internal class DraggingState {
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DraggingState() }
+const val makingRoomOffset = 25f
 
 @Composable
 fun <T> Draggable(
@@ -40,6 +42,15 @@ fun <T> Draggable(
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDragTargetInfo.current
+    val hoveredIndex = currentState.droppedItemIndex
+    val previousIndex = maxOf(0, hoveredIndex.minus(1))
+    val offsetForMakingRoom = when {
+        index == currentState.draggedItemIndex -> 0f
+        currentState.isDragging && index == previousIndex -> -makingRoomOffset
+        currentState.isDragging && index == hoveredIndex -> makingRoomOffset
+        else -> 0f
+    }
+    val makeRoomAnimatedValue by animateFloatAsState(targetValue = offsetForMakingRoom)
 
     Box(modifier = modifier
         .onGloballyPositioned {
@@ -60,7 +71,7 @@ fun <T> Draggable(
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
                     val pos = currentState.dragPosition + currentState.dragOffset
                     currentState.itemBounds.forEach { entry -> // TODO find a more optimal structure!
-                        if (entry.value.contains(pos) && entry.key != index) {
+                        if (entry.value.contains(pos)) {
                             currentState.droppedItemIndex = entry.key
                         }
                         // TODO count iterations and design more optimal conditions
@@ -78,14 +89,7 @@ fun <T> Draggable(
                 })
         }
         .graphicsLayer {
-            val hoveredIndex = currentState.droppedItemIndex
-            val previousIndex = maxOf(0, hoveredIndex.minus(1))
-            translationY = when {
-                index == currentState.draggedItemIndex -> 0f
-                currentState.isDragging && index == previousIndex -> -15f
-                currentState.isDragging && index == hoveredIndex -> 15f
-                else -> 0f
-            }
+            translationY = makeRoomAnimatedValue
         }) {
         content()
     }
