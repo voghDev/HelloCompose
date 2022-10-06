@@ -45,7 +45,7 @@ fun DraggableScreen() {
                 itemsState.forEachIndexed { i, item ->
                     Draggable(
                         modifier = Modifier,
-                        dataToDrop = item,
+                        data = item,
                         index = i,
                         numberOfItems = itemsState.size,
                         onDrag = { isDragging = true },

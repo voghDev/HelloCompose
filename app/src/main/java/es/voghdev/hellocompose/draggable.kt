@@ -41,13 +41,40 @@ internal class DraggingState {
     fun cellOffsetForMakingRoom(index: Int, numberOfItems: Int): Float {
         val previousIndex = maxOf(0, droppedItemIndex.minus(1))
         return when {
-            index == draggedItemIndex -> 0f
+            draggedItemIndex != droppedItemIndex &&
+                index == droppedItemIndex && index == numberOfItems.minus(1) -> -makeRoomOffset
+            draggedItemIndex != droppedItemIndex &&
+                index == droppedItemIndex && index == 0 -> makeRoomOffset
+            index == draggedItemIndex && index == droppedItemIndex -> 0f
             index in (0..1) -> 0f
             index in (numberOfItems - 2 until numberOfItems) -> 0f
             isDragging && index == previousIndex -> -makeRoomOffset
             isDragging && index == droppedItemIndex -> makeRoomOffset
             else -> 0f
         }
+    }
+
+    fun indexForOffset(offset: Offset): Int {
+        itemBounds[0]?.height?.let { h ->
+            val candidate = offset.y
+                .div(h)
+                .toInt()
+            val candidates = listOf(
+                candidate,
+                maxOf(0, candidate.minus(1))
+            )
+            candidates.forEach { i ->
+                if (itemBounds[i]?.contains(offset) == true) {
+                    return i
+                }
+            }
+        }
+        itemBounds.forEach { entry ->
+            if (entry.value.contains(offset)) {
+                return entry.key
+            }
+        }
+        return 0
     }
 }
 
@@ -56,7 +83,7 @@ internal val LocalDraggingState = compositionLocalOf { DraggingState() }
 @Composable
 fun <T> Draggable(
     modifier: Modifier,
-    dataToDrop: T,
+    data: T,
     index: Int,
     numberOfItems: Int,
     onDragStarted: (T) -> Unit,
@@ -79,51 +106,25 @@ fun <T> Draggable(
         .pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
                 onDragStart = {
-                    currentState.data = dataToDrop
+                    currentState.data = data
                     currentState.isDragging = true
                     currentState.draggedItemIndex = index
+                    currentState.droppedItemIndex = index
                     currentState.dragPosition = currentPosition + it
                     currentState.draggableComposable = content
-                    onDragStarted.invoke(dataToDrop)
+                    onDragStarted.invoke(data)
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
-                    var found = false
-                    val pos = currentState.dragPosition + currentState.dragOffset
-                    currentState.itemBounds[0]?.height?.let { h ->
-                        val candidate = pos.y
-                            .div(h)
-                            .toInt()
-                        val candidates = listOf(
-                            candidate,
-                            maxOf(0, candidate.minus(1))
-                        )
-                        candidates.forEach { i ->
-                            if (currentState.itemBounds[i]?.contains(pos) == true) {
-                                currentState.droppedItemIndex = i
-                                found = true
-                            }
-                        }
-                    }
-                    if (!found) {
-                        currentState.itemBounds.forEach { entry ->
-                            if (entry.value.contains(pos)) {
-                                currentState.droppedItemIndex = entry.key
-                                found = true
-                            }
-                            if (found) {
-                                found = false
-                                return@forEach
-                            }
-                        }
-                    }
-                    onDrag.invoke(dataToDrop)
+                    currentState.droppedItemIndex =
+                        currentState.indexForOffset(currentState.dragPosition + currentState.dragOffset)
+                    onDrag.invoke(data)
                 }, onDragEnd = {
+                    onDragEnded.invoke(data, maxOf(0, currentState.droppedItemIndex))
                     currentState.clear()
-                    onDragEnded.invoke(dataToDrop, maxOf(0, currentState.droppedItemIndex))
                 }, onDragCancel = {
+                    onDragCanceled.invoke(data)
                     currentState.clear()
-                    onDragCanceled.invoke(dataToDrop)
                 })
         }
         .graphicsLayer {
