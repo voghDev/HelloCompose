@@ -24,9 +24,20 @@ internal class DraggingState {
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
     var itemBounds by mutableStateOf(mutableMapOf<Int, Rect>())
     var data by mutableStateOf<Any?>(null)
+
+    fun clear() {
+        isDragging = false
+        dragPosition = Offset.Zero
+        dragOffset = Offset.Zero
+        draggedItemIndex = 0
+        droppedItemIndex = 0
+        draggableComposable = null
+        itemBounds.clear()
+        data = null
+    }
 }
 
-internal val LocalDragTargetInfo = compositionLocalOf { DraggingState() }
+internal val LocalDraggingState = compositionLocalOf { DraggingState() }
 const val makingRoomOffset = 25f
 
 @Composable
@@ -34,6 +45,7 @@ fun <T> Draggable(
     modifier: Modifier,
     dataToDrop: T,
     index: Int,
+    numberOfItems: Int,
     onDragStarted: (T) -> Unit,
     onDragEnded: (T, Int) -> Unit,
     onDragCanceled: (T) -> Unit,
@@ -41,11 +53,13 @@ fun <T> Draggable(
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
-    val currentState = LocalDragTargetInfo.current
+    val currentState = LocalDraggingState.current
     val hoveredIndex = currentState.droppedItemIndex
     val previousIndex = maxOf(0, hoveredIndex.minus(1))
     val offsetForMakingRoom = when {
         index == currentState.draggedItemIndex -> 0f
+        index in listOf(0, 1) -> 0f
+        index in listOf(numberOfItems - 2, numberOfItems - 1) -> 0f
         currentState.isDragging && index == previousIndex -> -makingRoomOffset
         currentState.isDragging && index == hoveredIndex -> makingRoomOffset
         else -> 0f
@@ -100,12 +114,10 @@ fun <T> Draggable(
                     }
                     onDrag.invoke(dataToDrop)
                 }, onDragEnd = {
-                    currentState.isDragging = false
-                    currentState.dragOffset = Offset.Zero
+                    currentState.clear()
                     onDragEnded.invoke(dataToDrop, maxOf(0, currentState.droppedItemIndex))
                 }, onDragCancel = {
-                    currentState.dragOffset = Offset.Zero
-                    currentState.isDragging = false
+                    currentState.clear()
                     onDragCanceled.invoke(dataToDrop)
                 })
         }
@@ -122,7 +134,7 @@ fun DraggableContainer(
     content: @Composable BoxScope.() -> Unit
 ) {
     val state = remember { DraggingState() }
-    CompositionLocalProvider(LocalDragTargetInfo provides state) {
+    CompositionLocalProvider(LocalDraggingState provides state) {
         Box(modifier = modifier.fillMaxSize())
         {
             content()

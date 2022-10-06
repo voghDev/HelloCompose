@@ -47,6 +47,7 @@ fun DraggableScreen() {
                         modifier = Modifier,
                         dataToDrop = item,
                         index = i,
+                        numberOfItems = itemsState.size,
                         onDrag = { isDragging = true },
                         onDragStarted = { isDragging = true },
                         onDragCanceled = { isDragging = false },
