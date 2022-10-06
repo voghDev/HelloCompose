@@ -69,13 +69,34 @@ fun <T> Draggable(
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
+                    var found = false
                     val pos = currentState.dragPosition + currentState.dragOffset
-                    currentState.itemBounds.forEach { entry -> // TODO find a more optimal structure!
-                        if (entry.value.contains(pos)) {
-                            currentState.droppedItemIndex = entry.key
+                    currentState.itemBounds[0]?.height?.let { h ->
+                        val candidate = pos.y
+                            .div(h)
+                            .toInt()
+                        val candidates = listOf(
+                            candidate,
+                            maxOf(0, candidate.minus(1))
+                        )
+                        candidates.forEach { i ->
+                            if (currentState.itemBounds[i]?.contains(pos) == true) {
+                                currentState.droppedItemIndex = i
+                                found = true
+                            }
                         }
-                        // TODO count iterations and design more optimal conditions
-                        // Based on item height and top-left coordinate
+                    }
+                    if (!found) {
+                        currentState.itemBounds.forEach { entry ->
+                            if (entry.value.contains(pos)) {
+                                currentState.droppedItemIndex = entry.key
+                                found = true
+                            }
+                            if (found) {
+                                found = false
+                                return@forEach
+                            }
+                        }
                     }
                     onDrag.invoke(dataToDrop)
                 }, onDragEnd = {
