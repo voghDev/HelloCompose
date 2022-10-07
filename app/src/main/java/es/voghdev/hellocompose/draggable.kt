@@ -55,7 +55,7 @@ internal class DraggingState {
     }
 
     fun indexForOffset(offset: Offset): Int {
-        itemBounds[0]?.height?.let { h ->
+        itemBounds[0]?.height?.takeIf { it > 0 }?.let { h ->
             val candidate = offset.y
                 .div(h)
                 .toInt()
