@@ -15,6 +15,9 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 
+typealias DraggableItemBounds = MutableMap<Int, Rect>
+internal val LocalDraggingState = compositionLocalOf { DraggingState() }
+
 internal class DraggingState {
     private val makeRoomOffset = 25f
 
@@ -24,7 +27,7 @@ internal class DraggingState {
     var draggedItemIndex by mutableStateOf(0)
     var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
-    var itemBounds by mutableStateOf(mutableMapOf<Int, Rect>())
+    var itemBounds: DraggableItemBounds by mutableStateOf(mutableMapOf())
     var data by mutableStateOf<Any?>(null)
 
     fun clear() {
@@ -54,8 +57,8 @@ internal class DraggingState {
         }
     }
 
-    fun indexForOffset(offset: Offset): Int {
-        itemBounds[0]?.height?.takeIf { it > 0 }?.let { h ->
+    fun indexForOffset(bounds: DraggableItemBounds, offset: Offset): Int {
+        bounds[0]?.height?.takeIf { it > 0 }?.let { h ->
             val candidate = offset.y
                 .div(h)
                 .toInt()
@@ -64,12 +67,12 @@ internal class DraggingState {
                 maxOf(0, candidate.minus(1))
             )
             candidates.forEach { i ->
-                if (itemBounds[i]?.contains(offset) == true) {
+                if (bounds[i]?.contains(offset) == true) {
                     return i
                 }
             }
         }
-        itemBounds.forEach { entry ->
+        bounds.forEach { entry ->
             if (entry.value.contains(offset)) {
                 return entry.key
             }
@@ -78,10 +81,8 @@ internal class DraggingState {
     }
 }
 
-internal val LocalDraggingState = compositionLocalOf { DraggingState() }
-
 @Composable
-fun <T> Draggable(
+fun <T> DragAndDropElement(
     modifier: Modifier,
     data: T,
     index: Int,
@@ -117,7 +118,10 @@ fun <T> Draggable(
                     change.consume()
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
                     currentState.droppedItemIndex =
-                        currentState.indexForOffset(currentState.dragStartPosition + currentState.dragOffset)
+                        currentState.indexForOffset(
+                            currentState.itemBounds,
+                            currentState.dragStartPosition + currentState.dragOffset
+                        )
                     onDrag.invoke(data)
                 }, onDragEnd = {
                     onDragEnded.invoke(data, maxOf(0, currentState.droppedItemIndex))

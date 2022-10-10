@@ -43,7 +43,7 @@ fun DraggableScreen() {
         key(itemsState) {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 itemsState.forEachIndexed { i, item ->
-                    Draggable(
+                    DragAndDropElement(
                         modifier = Modifier,
                         data = item,
                         index = i,
