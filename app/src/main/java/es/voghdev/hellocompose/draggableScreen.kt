@@ -39,7 +39,7 @@ fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
 fun DraggableScreen() {
     var isDragging by remember { mutableStateOf(false) }
     var itemsState by remember { mutableStateOf(itemsList) }
-    DraggableContainer(modifier = Modifier.fillMaxSize()) {
+    VerticalDragAndDropContainer(modifier = Modifier.fillMaxSize()) {
         key(itemsState) {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 itemsState.forEachIndexed { i, item ->

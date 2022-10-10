@@ -19,7 +19,7 @@ internal class DraggingState {
     private val makeRoomOffset = 25f
 
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
+    var dragStartPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
     var draggedItemIndex by mutableStateOf(0)
     var droppedItemIndex by mutableStateOf(0)
@@ -29,7 +29,7 @@ internal class DraggingState {
 
     fun clear() {
         isDragging = false
-        dragPosition = Offset.Zero
+        dragStartPosition = Offset.Zero
         dragOffset = Offset.Zero
         draggedItemIndex = 0
         droppedItemIndex = 0
@@ -110,14 +110,14 @@ fun <T> Draggable(
                     currentState.isDragging = true
                     currentState.draggedItemIndex = index
                     currentState.droppedItemIndex = index
-                    currentState.dragPosition = currentPosition + it
+                    currentState.dragStartPosition = currentPosition + it
                     currentState.draggableComposable = content
                     onDragStarted.invoke(data)
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
                     currentState.droppedItemIndex =
-                        currentState.indexForOffset(currentState.dragPosition + currentState.dragOffset)
+                        currentState.indexForOffset(currentState.dragStartPosition + currentState.dragOffset)
                     onDrag.invoke(data)
                 }, onDragEnd = {
                     onDragEnded.invoke(data, maxOf(0, currentState.droppedItemIndex))
@@ -135,7 +135,7 @@ fun <T> Draggable(
 }
 
 @Composable
-fun DraggableContainer(
+fun VerticalDragAndDropContainer(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -145,18 +145,24 @@ fun DraggableContainer(
         {
             content()
             if (state.isDragging) {
-                var targetSize by remember { mutableStateOf(IntSize.Zero) }
-                Box(modifier = Modifier
-                    .onGloballyPositioned { targetSize = it.size }
-                    .graphicsLayer {
-                        val offset = (state.dragPosition + state.dragOffset)
-                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationY = offset.y.minus(targetSize.height)
-                    }
-                ) {
-                    state.draggableComposable?.invoke()
-                }
+                DragAndDropGhostCell(state = state)
             }
         }
+    }
+}
+
+@Composable
+private fun DragAndDropGhostCell(state: DraggingState) {
+    var targetSize by remember { mutableStateOf(IntSize.Zero) }
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned { targetSize = it.size }
+            .graphicsLayer {
+                val offset = (state.dragStartPosition + state.dragOffset)
+                alpha = if (targetSize == IntSize.Zero) 0f else .9f
+                translationY = offset.y.minus(targetSize.height)
+            }
+    ) {
+        state.draggableComposable?.invoke()
     }
 }
