@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 
 typealias DraggableItemBounds = MutableMap<Int, Rect>
+
 internal val LocalDraggingState = compositionLocalOf { DraggingState() }
 
 internal class DraggingState {
@@ -43,16 +44,17 @@ internal class DraggingState {
 
     fun cellOffsetForMakingRoom(index: Int, numberOfItems: Int): Float {
         val previousIndex = maxOf(0, droppedItemIndex.minus(1))
+        val isFirst = index == 0
         return when {
             draggedItemIndex != droppedItemIndex &&
                 index == droppedItemIndex && index == numberOfItems.minus(1) -> -makeRoomOffset
             draggedItemIndex != droppedItemIndex &&
                 index == droppedItemIndex && index == 0 -> makeRoomOffset
             index == draggedItemIndex && index == droppedItemIndex -> 0f
-            index in (0..1) -> 0f
-            index in (numberOfItems - 2 until numberOfItems) -> 0f
+            isFirst -> 0f
             isDragging && index == previousIndex -> -makeRoomOffset
-            isDragging && index == droppedItemIndex -> makeRoomOffset
+            isDragging && droppedItemIndex > draggedItemIndex && index == droppedItemIndex -> -makeRoomOffset
+            isDragging && droppedItemIndex <= draggedItemIndex && index == droppedItemIndex -> makeRoomOffset
             else -> 0f
         }
     }
