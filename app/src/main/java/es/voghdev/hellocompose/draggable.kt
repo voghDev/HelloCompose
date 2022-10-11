@@ -43,18 +43,19 @@ internal class DraggingState {
     }
 
     fun cellOffsetForMakingRoom(index: Int, numberOfItems: Int): Float {
+        fun draggingFrom(index: Int): Boolean = draggedItemIndex == index
+        fun droppingIn(index: Int): Boolean = droppedItemIndex == index
+        fun Int.isFirst() = this == 0
+
         val previousIndex = maxOf(0, droppedItemIndex.minus(1))
-        val isFirst = index == 0
         return when {
             draggedItemIndex != droppedItemIndex &&
-                index == droppedItemIndex && index == numberOfItems.minus(1) -> -makeRoomOffset
-            draggedItemIndex != droppedItemIndex &&
-                index == droppedItemIndex && index == 0 -> makeRoomOffset
-            index == draggedItemIndex && index == droppedItemIndex -> 0f
-            isFirst -> 0f
+                droppingIn(index) && index.isFirst() -> makeRoomOffset
+            draggingFrom(index) && index == droppedItemIndex -> 0f
+            index.isFirst() -> 0f
             isDragging && index == previousIndex -> -makeRoomOffset
-            isDragging && droppedItemIndex > draggedItemIndex && index == droppedItemIndex -> -makeRoomOffset
-            isDragging && droppedItemIndex <= draggedItemIndex && index == droppedItemIndex -> makeRoomOffset
+            isDragging && droppedItemIndex > draggedItemIndex && droppingIn(index) -> -makeRoomOffset
+            isDragging && droppedItemIndex <= draggedItemIndex && droppingIn(index) -> makeRoomOffset
             else -> 0f
         }
     }
