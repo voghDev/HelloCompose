@@ -62,7 +62,7 @@ fun MainScreen(
     onOpenSVGButtonsClick: () -> Unit,
     onOpenFormsClick: () -> Unit
 ) {
-    Surface(color = MaterialTheme.colors.background) {
+    Box {
         Column {
             Button(onClick = onOpenGridClick) {
                 Text("Item chips example")

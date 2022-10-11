@@ -83,4 +83,25 @@ class ExampleUnitTest {
 
         assertEquals(Item("Item 3"), result[1])
     }
+
+    @Test
+    fun returnsTheSameListIfNewPositionIsTheSameAsCurrent() {
+        val result = someItems.withReallocatedItem(anItem, 8)
+
+        assertEquals(result, someItems)
+    }
+
+    @Test
+    fun returnsTheSameListIfMovingTheFirstElementToTheSamePosition() {
+        val result = someItems.withReallocatedItem(someItems.first(), 0)
+
+        assertEquals(result, someItems)
+    }
+
+    @Test
+    fun returnsTheSameListIfMovingTheLastElementToTheSamePosition() {
+        val result = someItems.withReallocatedItem(someItems.last(), someItems.size - 1)
+
+        assertEquals(result, someItems)
+    }
 }
