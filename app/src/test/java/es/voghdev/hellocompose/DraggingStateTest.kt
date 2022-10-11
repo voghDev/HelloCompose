@@ -8,13 +8,12 @@ import org.junit.Test
 class DraggingStateTest {
     private val moveItemUp = DraggingState.ItemOffset.MoveItemUp.value
     private val moveItemDown = DraggingState.ItemOffset.MoveItemDown.value
-    private val aNumberOfItems = 10
 
     @Test
-    fun shouldReturnAPositiveOffsetWhenDraggingSecondCellToSixthPositionIfThereAreTenItems() {
+    fun shouldMoveTheItemUpWhenDraggingSecondCellToSixthPositionIfThereAreTenItems() {
         val state = givenTheUserIsDragging(fromIndex = 1, toIndex = 6)
 
-        val offset = state.cellOffsetForMakingRoom(6, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(6)
 
         assertEquals(moveItemUp, offset)
     }
@@ -23,7 +22,7 @@ class DraggingStateTest {
     fun shouldNotMoveFirstElementWhenDraggingIt() {
         val state = givenTheUserIsDragging(fromIndex = 0, toIndex = 0)
 
-        val offset = state.cellOffsetForMakingRoom(0, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(0)
 
         assertEquals(0f, offset)
     }
@@ -32,7 +31,7 @@ class DraggingStateTest {
     fun shouldMoveSecondCellWhenDraggingFifthCellToTheFirstOne() {
         val state = givenTheUserIsDragging(fromIndex = 5, toIndex = 6)
 
-        val offset = state.cellOffsetForMakingRoom(6, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(6)
 
         assertEquals(moveItemUp, offset)
     }
@@ -41,7 +40,7 @@ class DraggingStateTest {
     fun shouldNotMoveLastElementWhenDraggingIt() {
         val state = givenTheUserIsDragging(fromIndex = 9, toIndex = 9)
 
-        val offset = state.cellOffsetForMakingRoom(9, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(9)
 
         assertEquals(0f, offset)
     }
@@ -50,7 +49,7 @@ class DraggingStateTest {
     fun shouldMoveLastElementWhenDraggingAnElementInTheMiddleToIt() {
         val state = givenTheUserIsDragging(fromIndex = 6, toIndex = 9)
 
-        val offset = state.cellOffsetForMakingRoom(9, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(9)
 
         assertEquals(moveItemUp, offset)
     }
@@ -59,7 +58,7 @@ class DraggingStateTest {
     fun shouldMoveFirstElementWhenDraggingAnElementInTheMiddleToIt() {
         val state = givenTheUserIsDragging(fromIndex = 6, toIndex = 0)
 
-        val offset = state.cellOffsetForMakingRoom(0, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(0)
 
         assertEquals(moveItemDown, offset)
     }
@@ -94,7 +93,7 @@ class DraggingStateTest {
     fun shouldMoveCell5UpWhenDraggingCell4OnTopOfIt() {
         val state = givenTheUserIsDragging(fromIndex = 4, toIndex = 5)
 
-        val offset = state.cellOffsetForMakingRoom(5, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(5)
 
         assertEquals(moveItemUp, offset)
     }
@@ -103,7 +102,7 @@ class DraggingStateTest {
     fun shouldMoveBeforeLastCellWhenDraggingCell7ToIt() {
         val state = givenTheUserIsDragging(fromIndex = 7, toIndex = 8)
 
-        val offset = state.cellOffsetForMakingRoom(8, aNumberOfItems)
+        val offset = state.cellOffsetForMakingRoom(8)
 
         assertEquals(moveItemUp, offset)
     }

@@ -34,7 +34,7 @@ internal class DraggingState {
     var draggedItemIndex by mutableStateOf(0)
     var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
-    var itemBounds: DraggableItemBounds by mutableStateOf(mutableMapOf())
+    var itemBounds: DraggableItemBounds by mutableStateMapOf()
     var data by mutableStateOf<Any?>(null)
 
     fun clear() {
@@ -48,7 +48,7 @@ internal class DraggingState {
         data = null
     }
 
-    fun cellOffsetForMakingRoom(index: Int, numberOfItems: Int): Float {
+    fun cellOffsetForMakingRoom(index: Int): Float {
         fun draggingFrom(index: Int): Boolean = draggedItemIndex == index
         fun droppingIn(index: Int): Boolean = droppedItemIndex == index
         fun Int.isFirst() = this == 0
@@ -95,7 +95,6 @@ fun <T> DragAndDropElement(
     modifier: Modifier,
     data: T,
     index: Int,
-    numberOfItems: Int,
     onDragStarted: (T) -> Unit,
     onDragEnded: (T, Int) -> Unit,
     onDragCanceled: (T) -> Unit,
@@ -105,7 +104,7 @@ fun <T> DragAndDropElement(
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDraggingState.current
     val makeRoomAnimatedValue by animateFloatAsState(
-        targetValue = currentState.cellOffsetForMakingRoom(index, numberOfItems)
+        targetValue = currentState.cellOffsetForMakingRoom(index)
     )
 
     Box(modifier = modifier
@@ -158,7 +157,7 @@ fun VerticalDragAndDropContainer(
         {
             content()
             if (state.isDragging) {
-                DragAndDropGhostCell(state = state)
+                DragAndDropGhostCell(state)
             }
         }
     }
