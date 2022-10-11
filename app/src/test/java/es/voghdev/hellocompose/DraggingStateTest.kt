@@ -6,8 +6,8 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
 class DraggingStateTest {
-    private val anOffset = 25f
-    private val negativeOffset = -anOffset
+    private val moveItemUp = DraggingState.ItemOffset.MoveItemUp.value
+    private val moveItemDown = DraggingState.ItemOffset.MoveItemDown.value
     private val aNumberOfItems = 10
 
     @Test
@@ -16,7 +16,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(6, aNumberOfItems)
 
-        assertEquals(negativeOffset, offset)
+        assertEquals(moveItemUp, offset)
     }
 
     @Test
@@ -34,7 +34,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(6, aNumberOfItems)
 
-        assertEquals(negativeOffset, offset)
+        assertEquals(moveItemUp, offset)
     }
 
     @Test
@@ -52,7 +52,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(9, aNumberOfItems)
 
-        assertEquals(negativeOffset, offset)
+        assertEquals(moveItemUp, offset)
     }
 
     @Test
@@ -61,7 +61,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(0, aNumberOfItems)
 
-        assertEquals(anOffset, offset)
+        assertEquals(moveItemDown, offset)
     }
 
     @Test
@@ -96,7 +96,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(5, aNumberOfItems)
 
-        assertEquals(negativeOffset, offset)
+        assertEquals(moveItemUp, offset)
     }
 
     @Test
@@ -105,7 +105,7 @@ class DraggingStateTest {
 
         val offset = state.cellOffsetForMakingRoom(8, aNumberOfItems)
 
-        assertEquals(negativeOffset, offset)
+        assertEquals(moveItemUp, offset)
     }
 
     private fun givenTheUserIsDragging(fromIndex: Int, toIndex: Int): DraggingState =

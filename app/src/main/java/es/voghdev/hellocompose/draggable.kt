@@ -18,9 +18,15 @@ import androidx.compose.ui.unit.IntSize
 typealias DraggableItemBounds = MutableMap<Int, Rect>
 
 internal val LocalDraggingState = compositionLocalOf { DraggingState() }
+private const val offsetToMakeRoom = 25f
 
 internal class DraggingState {
-    private val makeRoomOffset = 25f
+
+    enum class ItemOffset(val value: Float) {
+        MoveItemUp(-offsetToMakeRoom),
+        MoveItemDown(offsetToMakeRoom),
+        DoNotMove(0f)
+    }
 
     var isDragging: Boolean by mutableStateOf(false)
     var dragStartPosition by mutableStateOf(Offset.Zero)
@@ -50,14 +56,14 @@ internal class DraggingState {
         val previousIndex = maxOf(0, droppedItemIndex.minus(1))
         return when {
             draggedItemIndex != droppedItemIndex &&
-                droppingIn(index) && index.isFirst() -> makeRoomOffset
-            draggingFrom(index) && index == droppedItemIndex -> 0f
-            index.isFirst() -> 0f
-            isDragging && index == previousIndex -> -makeRoomOffset
-            isDragging && droppedItemIndex > draggedItemIndex && droppingIn(index) -> -makeRoomOffset
-            isDragging && droppedItemIndex <= draggedItemIndex && droppingIn(index) -> makeRoomOffset
-            else -> 0f
-        }
+                droppingIn(index) && index.isFirst() -> ItemOffset.MoveItemDown
+            draggingFrom(index) && index == droppedItemIndex -> ItemOffset.DoNotMove
+            index.isFirst() -> ItemOffset.DoNotMove
+            isDragging && index == previousIndex -> ItemOffset.MoveItemUp
+            isDragging && droppedItemIndex > draggedItemIndex && droppingIn(index) -> ItemOffset.MoveItemUp
+            isDragging && droppedItemIndex <= draggedItemIndex && droppingIn(index) -> ItemOffset.MoveItemDown
+            else -> ItemOffset.DoNotMove
+        }.value
     }
 
     fun indexForOffset(bounds: DraggableItemBounds, offset: Offset): Int {
