@@ -15,19 +15,31 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 
+typealias DraggableItemBounds = MutableMap<Int, Rect>
+
+internal val LocalDraggingState = compositionLocalOf { DraggingState() }
+private const val offsetToMakeRoom = 25f
+
 internal class DraggingState {
+
+    enum class ItemOffset(val value: Float) {
+        MoveItemUp(-offsetToMakeRoom),
+        MoveItemDown(offsetToMakeRoom),
+        DoNotMove(0f)
+    }
+
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
+    var dragStartPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
     var draggedItemIndex by mutableStateOf(0)
     var droppedItemIndex by mutableStateOf(0)
     var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
-    var itemBounds by mutableStateOf(mutableMapOf<Int, Rect>())
+    var itemBounds: DraggableItemBounds by mutableStateMapOf()
     var data by mutableStateOf<Any?>(null)
 
     fun clear() {
         isDragging = false
-        dragPosition = Offset.Zero
+        dragStartPosition = Offset.Zero
         dragOffset = Offset.Zero
         draggedItemIndex = 0
         droppedItemIndex = 0
@@ -35,17 +47,54 @@ internal class DraggingState {
         itemBounds.clear()
         data = null
     }
+
+    fun cellOffsetForMakingRoom(index: Int): Float {
+        fun draggingFrom(index: Int): Boolean = draggedItemIndex == index
+        fun droppingIn(index: Int): Boolean = droppedItemIndex == index
+        fun Int.isFirst() = this == 0
+
+        val previousIndex = maxOf(0, droppedItemIndex.minus(1))
+        return when {
+            draggedItemIndex != droppedItemIndex &&
+                droppingIn(index) && index.isFirst() -> ItemOffset.MoveItemDown
+            draggingFrom(index) && index == droppedItemIndex -> ItemOffset.DoNotMove
+            index.isFirst() -> ItemOffset.DoNotMove
+            isDragging && index == previousIndex -> ItemOffset.MoveItemUp
+            isDragging && droppedItemIndex > draggedItemIndex && droppingIn(index) -> ItemOffset.MoveItemUp
+            isDragging && droppedItemIndex <= draggedItemIndex && droppingIn(index) -> ItemOffset.MoveItemDown
+            else -> ItemOffset.DoNotMove
+        }.value
+    }
+
+    fun indexForOffset(bounds: DraggableItemBounds, offset: Offset): Int {
+        bounds[0]?.height?.takeIf { it > 0 }?.let { h ->
+            val candidate = offset.y
+                .div(h)
+                .toInt()
+            val candidates = listOf(
+                candidate,
+                maxOf(0, candidate.minus(1))
+            )
+            candidates.forEach { i ->
+                if (bounds[i]?.contains(offset) == true) {
+                    return i
+                }
+            }
+        }
+        bounds.forEach { entry ->
+            if (entry.value.contains(offset)) {
+                return entry.key
+            }
+        }
+        return 0
+    }
 }
 
-internal val LocalDraggingState = compositionLocalOf { DraggingState() }
-const val makingRoomOffset = 25f
-
 @Composable
-fun <T> Draggable(
+fun <T> DragAndDropElement(
     modifier: Modifier,
-    dataToDrop: T,
+    data: T,
     index: Int,
-    numberOfItems: Int,
     onDragStarted: (T) -> Unit,
     onDragEnded: (T, Int) -> Unit,
     onDragCanceled: (T) -> Unit,
@@ -54,17 +103,9 @@ fun <T> Draggable(
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDraggingState.current
-    val hoveredIndex = currentState.droppedItemIndex
-    val previousIndex = maxOf(0, hoveredIndex.minus(1))
-    val offsetForMakingRoom = when {
-        index == currentState.draggedItemIndex -> 0f
-        index in listOf(0, 1) -> 0f
-        index in listOf(numberOfItems - 2, numberOfItems - 1) -> 0f
-        currentState.isDragging && index == previousIndex -> -makingRoomOffset
-        currentState.isDragging && index == hoveredIndex -> makingRoomOffset
-        else -> 0f
-    }
-    val makeRoomAnimatedValue by animateFloatAsState(targetValue = offsetForMakingRoom)
+    val makeRoomAnimatedValue by animateFloatAsState(
+        targetValue = currentState.cellOffsetForMakingRoom(index)
+    )
 
     Box(modifier = modifier
         .onGloballyPositioned {
@@ -74,51 +115,28 @@ fun <T> Draggable(
         .pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
                 onDragStart = {
-                    currentState.data = dataToDrop
+                    currentState.data = data
                     currentState.isDragging = true
                     currentState.draggedItemIndex = index
-                    currentState.dragPosition = currentPosition + it
+                    currentState.droppedItemIndex = index
+                    currentState.dragStartPosition = currentPosition + it
                     currentState.draggableComposable = content
-                    onDragStarted.invoke(dataToDrop)
+                    onDragStarted.invoke(data)
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
-                    var found = false
-                    val pos = currentState.dragPosition + currentState.dragOffset
-                    currentState.itemBounds[0]?.height?.let { h ->
-                        val candidate = pos.y
-                            .div(h)
-                            .toInt()
-                        val candidates = listOf(
-                            candidate,
-                            maxOf(0, candidate.minus(1))
+                    currentState.droppedItemIndex =
+                        currentState.indexForOffset(
+                            currentState.itemBounds,
+                            currentState.dragStartPosition + currentState.dragOffset
                         )
-                        candidates.forEach { i ->
-                            if (currentState.itemBounds[i]?.contains(pos) == true) {
-                                currentState.droppedItemIndex = i
-                                found = true
-                            }
-                        }
-                    }
-                    if (!found) {
-                        currentState.itemBounds.forEach { entry ->
-                            if (entry.value.contains(pos)) {
-                                currentState.droppedItemIndex = entry.key
-                                found = true
-                            }
-                            if (found) {
-                                found = false
-                                return@forEach
-                            }
-                        }
-                    }
-                    onDrag.invoke(dataToDrop)
+                    onDrag.invoke(data)
                 }, onDragEnd = {
+                    onDragEnded.invoke(data, maxOf(0, currentState.droppedItemIndex))
                     currentState.clear()
-                    onDragEnded.invoke(dataToDrop, maxOf(0, currentState.droppedItemIndex))
                 }, onDragCancel = {
+                    onDragCanceled.invoke(data)
                     currentState.clear()
-                    onDragCanceled.invoke(dataToDrop)
                 })
         }
         .graphicsLayer {
@@ -129,7 +147,7 @@ fun <T> Draggable(
 }
 
 @Composable
-fun DraggableContainer(
+fun VerticalDragAndDropContainer(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -139,18 +157,24 @@ fun DraggableContainer(
         {
             content()
             if (state.isDragging) {
-                var targetSize by remember { mutableStateOf(IntSize.Zero) }
-                Box(modifier = Modifier
-                    .onGloballyPositioned { targetSize = it.size }
-                    .graphicsLayer {
-                        val offset = (state.dragPosition + state.dragOffset)
-                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationY = offset.y.minus(targetSize.height)
-                    }
-                ) {
-                    state.draggableComposable?.invoke()
-                }
+                DragAndDropGhostCell(state)
             }
         }
+    }
+}
+
+@Composable
+private fun DragAndDropGhostCell(state: DraggingState) {
+    var targetSize by remember { mutableStateOf(IntSize.Zero) }
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned { targetSize = it.size }
+            .graphicsLayer {
+                val offset = (state.dragStartPosition + state.dragOffset)
+                alpha = if (targetSize == IntSize.Zero) 0f else .9f
+                translationY = offset.y.minus(targetSize.height)
+            }
+    ) {
+        state.draggableComposable?.invoke()
     }
 }
