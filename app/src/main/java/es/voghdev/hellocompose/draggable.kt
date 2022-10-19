@@ -72,7 +72,8 @@ fun <T> DragAndDropElement(
     onDragEnded: (T, Int) -> Unit,
     onDragCanceled: (T) -> Unit,
     onDrag: (T) -> Unit,
-    content: @Composable (() -> Unit)
+    placeholder: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
     val currentState = LocalDraggingState.current
@@ -109,7 +110,10 @@ fun <T> DragAndDropElement(
                     currentState.clear()
                 })
         }) {
-        content()
+        if (currentState.droppedItemIndex == index)
+            placeholder()
+        else
+            content()
     }
 }
 
