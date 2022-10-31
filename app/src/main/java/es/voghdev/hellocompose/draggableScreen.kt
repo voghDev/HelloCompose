@@ -16,9 +16,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 
-data class Item(val title: String)
+sealed class ListItem {
+    data class ItemCell(val title: String) : ListItem()
+    object GhostCell : ListItem()
+}
 
-private val itemsList = (0..9).map { Item("Item $it") }
+private val itemsList: List<ListItem> = (0..9).map { ListItem.ItemCell("Item $it") }
 fun <T> List<T>.withReallocatedItem(updatedItem: T, newPosition: Int): List<T> {
     val index = this.indexOf(updatedItem)
 
@@ -53,10 +56,15 @@ fun DraggableScreen() {
                         onDragEnded = { droppedItem, newPosition ->
                             isDragging = false
                             itemsState = itemsState.withReallocatedItem(droppedItem, newPosition)
+                        },
+                        placeholder = {
+                            Box {
+                                HighlightedBackground()
+                            }
                         }
                     ) {
                         DraggableItem(
-                            item = item,
+                            item = item as ListItem.ItemCell,
                             isDragging = isDragging
                         )
                     }
@@ -68,10 +76,9 @@ fun DraggableScreen() {
 
 @Composable
 private fun DraggableItem(
-    modifier: Modifier = Modifier,
-    item: Item,
+    item: ListItem.ItemCell,
     isDragging: Boolean
-) = Box(modifier) {
+) = Box {
     HighlightedBackground()
     Column(Modifier.clickable(onClick = { })) {
         SmallSpacer()
