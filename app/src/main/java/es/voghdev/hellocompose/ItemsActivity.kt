@@ -33,10 +33,4 @@ class ItemsActivity : ComponentActivity() {
             }
         }
     }
-
-    @Preview
-    @Composable
-    private fun RowPreview() {
-        SampleRow(text = "This is a row")
-    }
 }
